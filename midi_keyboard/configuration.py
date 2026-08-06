@@ -1,12 +1,21 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from omegaconf import OmegaConf
 from pathlib import Path
 
+
+@dataclass
+class KeyDimensions:
+    length: float
+    width: float
+
 @dataclass
 class ConfigSchema:
-    u_dist: float = 19.5
-    white_key_len: float = 1.75
-    white_key_width: float = 1.25
+    dist_u: float = 19.5
+    white_key_dims: KeyDimensions = field(default_factory=lambda: KeyDimensions(length=1.75, width=1.25))
+    black_key_dims: KeyDimensions = field(default_factory=lambda: KeyDimensions(length=1.75, width=1.0))
+
+    rows_height_diff_mm: float = 12.0
+
     mount_plate_width: float = 1.25
     mount_u: float = 14
 

@@ -1,20 +1,26 @@
 from solid2 import square, circle, polygon
 from solid2.extensions.bosl2 import round_corners
 
-from omegaconf import OmegaConf
-from configuration import ConfigSchema
+from configuration import ConfigSchema, KeyDimensions
 
 
-def generate_keys_row(n: int, conf: ConfigSchema):
+def generate_keys_row(
+    n: int, 
+    key_dims: KeyDimensions,
+    conf: ConfigSchema,
+    plate_width: float,
+    plate_length: float,
+    initial_offest: float | None = None,
+):
+    key_width = key_dims.width * conf.dist_u
+    key_len = key_dims.length * conf.dist_u
     u = conf.mount_u
-    white_key_len = conf.white_key_len
-    white_key_dist = conf.u_dist * conf.white_key_width
-    mx_hole = square([u, u], center=True)
-    w_mounting_plate = square([white_key_len, white_key_dist], center=True) - mx_hole
+    mx_hole = square([u, u], center=True).translateX(key_len / 2).translateY(key_width / 2)
+    w_mounting_plate = square([plate_width, plate_length], center=True) - mx_hole
     w_mounting_plate_3d = w_mounting_plate.linear_extrude(conf.mount_plate_width)
 
     for _ in range(n):
-        w_mounting_plate_3d += w_mounting_plate_3d.translateY(white_key_dist)
+        w_mounting_plate_3d -= mx_hole.translateY(key_width)
 
     return w_mounting_plate_3d
 
