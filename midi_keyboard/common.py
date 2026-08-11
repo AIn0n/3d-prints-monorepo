@@ -4,25 +4,6 @@ from solid2.extensions.bosl2 import round_corners
 from configuration import ConfigSchema, KeyDimensions
 
 
-def generate_keys_row(
-    n: int, 
-    key_dims: KeyDimensions,
-    conf: ConfigSchema,
-    plate_width: float,
-    plate_length: float,
-    initial_offest: float | None = None,
-):
-    key_width = key_dims.width * conf.dist_u
-    key_len = key_dims.length * conf.dist_u
-    u = conf.mount_u
-    mx_hole = square([u, u], center=True).translateX(key_len / 2).translateY(key_width / 2)
-    w_mounting_plate = square([plate_width, plate_length], center=True) - mx_hole
-    w_mounting_plate_3d = w_mounting_plate.linear_extrude(conf.mount_plate_width)
-
-    for _ in range(n):
-        w_mounting_plate_3d -= mx_hole.translateY(key_width)
-
-    return w_mounting_plate_3d
 
 
 def generate_mx_stem():
