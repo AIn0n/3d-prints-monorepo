@@ -4,8 +4,6 @@ from solid2.extensions.bosl2 import round_corners
 from configuration import ConfigSchema, KeyDimensions
 
 
-
-
 def generate_mx_stem():
     mx_stem_l = 4.0
     mx_stem_w = 1.2
@@ -22,8 +20,8 @@ def generate_key(width: float, length: float, conf: ConfigSchema):
     u = conf.keycap_u
     h = conf.keycap_height_mm
 
-    keycap_base = square([u * width, u * length], center= True)
+    keycap_base = square([u * width, u * length], center=True)
     rounded_keycap = polygon(
         round_corners(path=keycap_base, radius=conf.keycap_rounding_corner_mm)
-    ).linear_extrude(height=h)    
+    ).linear_extrude(height=h)
     return rounded_keycap + stem.up(h - 0.01)

@@ -8,11 +8,16 @@ class KeyDimensions:
     length: float
     width: float
 
+
 @dataclass
 class ConfigSchema:
     dist_u: float = 19.5
-    white_key_dims: KeyDimensions = field(default_factory=lambda: KeyDimensions(length=1.75, width=1.25))
-    black_key_dims: KeyDimensions = field(default_factory=lambda: KeyDimensions(length=1.75, width=1.0))
+    white_key_dims: KeyDimensions = field(
+        default_factory=lambda: KeyDimensions(length=1.75, width=1.25)
+    )
+    black_key_dims: KeyDimensions = field(
+        default_factory=lambda: KeyDimensions(length=1.75, width=1.0)
+    )
 
     rows_height_diff_mm: float = 12.0
 
@@ -24,5 +29,9 @@ class ConfigSchema:
     keycap_rounding_corner_mm: float = 2.0
 
     output_dir: Path = Path("./build/")
+
+    white_black_keys_offset_mm: float = 6.0
+    base_height_mm: float = 8.0
+
 
 schema = OmegaConf.structured(ConfigSchema)
