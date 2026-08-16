@@ -1,7 +1,8 @@
 from solid2 import square, circle, polygon
 from solid2.extensions.bosl2 import round_corners
+from itertools import accumulate
 
-from configuration import ConfigSchema, KeyDimensions
+from configuration import ConfigSchema
 
 
 def generate_mx_stem():
@@ -25,3 +26,20 @@ def generate_key(width: float, length: float, conf: ConfigSchema):
         round_corners(path=keycap_base, radius=conf.keycap_rounding_corner_mm)
     ).linear_extrude(height=h)
     return rounded_keycap + stem.up(h - 0.01)
+
+
+def generate_keys_row(
+    plate_width: float,
+    plate_length: float,
+    key_sep_distances: list[float],
+    y_offset: float,
+    conf: ConfigSchema,
+):
+    u = conf.mount_u
+    mx_hole = square([u, u]).translateY(y_offset)
+    mounting_plate = square([plate_width, plate_length])
+
+    for sep in accumulate(key_sep_distances):
+        mounting_plate -= mx_hole.translateX(sep)
+
+    return mounting_plate.linear_extrude(conf.mount_plate_width)
