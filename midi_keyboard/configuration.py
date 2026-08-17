@@ -10,6 +10,12 @@ class KeyDimensions:
 
 
 @dataclass
+class ConnectorDimensions:
+    base_diff_mm: float = 2
+    margin_mm: float = 0.06
+
+
+@dataclass
 class ConfigSchema:
     dist_u: float = 19.5
     white_key_dims: KeyDimensions = field(
@@ -32,6 +38,7 @@ class ConfigSchema:
 
     white_black_keys_offset_mm: float = 6.0
     base_height_mm: float = 8.0
+    connector_dims: ConnectorDimensions = field(default_factory=ConnectorDimensions)
 
 
 schema = OmegaConf.structured(ConfigSchema)

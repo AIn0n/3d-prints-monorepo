@@ -1,8 +1,65 @@
-from solid2 import square, circle, polygon
+from solid2 import square, circle, polygon, cube
 from solid2.extensions.bosl2 import round_corners
 from itertools import accumulate
 
 from configuration import ConfigSchema
+
+
+def generate_octave(white_keys: int, conf: ConfigSchema):
+    assert white_keys <= 7
+    white_keys_to_black_num_mapping = {
+        1: 0,
+        2: 1,
+        3: 2,
+        4: 2,
+        5: 3,
+        6: 4,
+        7: 5,
+    }
+
+    wk_total_width = conf.white_key_dims.width * conf.dist_u
+    octave_width = wk_total_width * white_keys
+    white_plate_len = conf.white_key_dims.length * conf.dist_u
+    w_distances = [(wk_total_width - conf.mount_u) / 2] + [wk_total_width] * 7
+    white_mount_plate = generate_keys_row(
+        octave_width,
+        white_plate_len,
+        w_distances[:white_keys],
+        (white_plate_len - conf.mount_u) / 2,
+        conf,
+    ) + cube([octave_width, conf.mount_plate_width, conf.base_height_mm]).down(
+        conf.base_height_mm
+    )
+
+    bw_diff = conf.white_black_keys_offset_mm + conf.mount_plate_width
+    b_distances = [
+        wk_total_width - conf.mount_u / 2,
+        wk_total_width,
+        wk_total_width * 2,
+        wk_total_width,
+        wk_total_width,
+    ]
+    black_mount_plate = (
+        generate_keys_row(
+            octave_width,
+            conf.dist_u,
+            b_distances[: white_keys_to_black_num_mapping[white_keys]],
+            (conf.dist_u - conf.mount_u) / 2,
+            conf,
+        )
+        + cube([octave_width, conf.mount_plate_width, bw_diff]).down(bw_diff)
+        + cube([octave_width, conf.mount_plate_width, bw_diff + conf.base_height_mm])
+        .down(bw_diff + conf.base_height_mm)
+        .translateY(conf.dist_u - conf.mount_plate_width)
+    )
+
+    return black_mount_plate + white_mount_plate.translate(
+        [
+            0,
+            -white_plate_len,
+            -conf.white_black_keys_offset_mm - conf.mount_plate_width,
+        ]
+    )
 
 
 def generate_mx_stem():
