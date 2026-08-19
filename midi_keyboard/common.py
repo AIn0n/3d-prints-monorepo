@@ -1,4 +1,4 @@
-from solid2 import square, circle, polygon, cube
+from solid2 import square, circle, polygon, cube, cylinder
 from solid2.extensions.bosl2 import round_corners
 from itertools import accumulate
 
@@ -23,6 +23,7 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
     white_plate_len = conf.white_key_dims.length * conf.dist_u
     w_distances = [(wk_total_width - conf.mount_u) / 2] + [wk_total_width] * 7
     white_mount_plate = (
+        # upper wall, with mx mounting holes
         generate_keys_row(
             octave_width,
             white_plate_len,
@@ -30,14 +31,27 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
             (white_plate_len - conf.mount_u) / 2,
             conf,
         )
+        # front wall of the keyboard
         + cube([octave_width, conf.mount_plate_width, conf.base_height_mm]).down(
             conf.base_height_mm
         )
+        # connectors
         + generate_female_connector(w_distances[0], white_plate_len, conf)
         + generate_male_connector(w_distances[0], white_plate_len, conf).translateX(
             octave_width
         )
     )
+
+    for i in range(1, white_keys, conf.stand_density):
+        white_mount_plate += cylinder(
+            h=conf.base_height_mm, r=conf.stand_r_mm
+        ).translate(
+            [
+                i * wk_total_width,
+                white_plate_len - conf.stand_r_mm,
+                -conf.base_height_mm,
+            ]
+        )
 
     bw_diff = conf.white_black_keys_offset_mm + conf.mount_plate_width
     b_distances = [
