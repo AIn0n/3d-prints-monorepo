@@ -34,10 +34,13 @@ def generate_female_connector(
     for i in range(conn_n):
         conn -= female_conn.translateY(adjusted_offset / 2 + i * adjusted_offset)
 
-    return conn.down(width) if downscale else conn
+    return conn.down(conn_height) if downscale else conn
 
 
-def generate_male_connector(width: float, len_: float, conf: ConfigSchema):
+def generate_male_connector(
+    width: float, len_: float, conf: ConfigSchema, center_down: bool = True
+):
+    width, len_ = normalize_width_len_connector(width, len_)
     margin = conf.connector_dims.margin_mm
 
     conn_height = min(width, conf.base_height_mm)
@@ -62,4 +65,4 @@ def generate_male_connector(width: float, len_: float, conf: ConfigSchema):
     for i in range(conn_n):
         conn += male_conn.translateY(adjusted_offset / 2 + i * adjusted_offset)
 
-    return conn
+    return conn.translateX(-width).down(conn_height) if center_down else conn

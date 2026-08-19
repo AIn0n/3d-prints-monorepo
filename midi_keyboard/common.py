@@ -3,6 +3,7 @@ from solid2.extensions.bosl2 import round_corners
 from itertools import accumulate
 
 from configuration import ConfigSchema
+from connectors import generate_male_connector, generate_female_connector
 
 
 def generate_octave(white_keys: int, conf: ConfigSchema):
@@ -21,14 +22,21 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
     octave_width = wk_total_width * white_keys
     white_plate_len = conf.white_key_dims.length * conf.dist_u
     w_distances = [(wk_total_width - conf.mount_u) / 2] + [wk_total_width] * 7
-    white_mount_plate = generate_keys_row(
-        octave_width,
-        white_plate_len,
-        w_distances[:white_keys],
-        (white_plate_len - conf.mount_u) / 2,
-        conf,
-    ) + cube([octave_width, conf.mount_plate_width, conf.base_height_mm]).down(
-        conf.base_height_mm
+    white_mount_plate = (
+        generate_keys_row(
+            octave_width,
+            white_plate_len,
+            w_distances[:white_keys],
+            (white_plate_len - conf.mount_u) / 2,
+            conf,
+        )
+        + cube([octave_width, conf.mount_plate_width, conf.base_height_mm]).down(
+            conf.base_height_mm
+        )
+        + generate_female_connector(w_distances[0], white_plate_len, conf)
+        + generate_male_connector(w_distances[0], white_plate_len, conf).translateX(
+            octave_width
+        )
     )
 
     bw_diff = conf.white_black_keys_offset_mm + conf.mount_plate_width
@@ -51,6 +59,10 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
         + cube([octave_width, conf.mount_plate_width, bw_diff + conf.base_height_mm])
         .down(bw_diff + conf.base_height_mm)
         .translateY(conf.dist_u - conf.mount_plate_width)
+        + generate_female_connector(b_distances[0], conf.dist_u, conf)
+        + generate_male_connector(b_distances[0], conf.dist_u, conf).translateX(
+            octave_width
+        )
     )
 
     return black_mount_plate + white_mount_plate.translate(
