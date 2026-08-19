@@ -38,13 +38,13 @@ def generate_male_connector(width: float, len_: float, conf: ConfigSchema):
 
     male_conn = (
         trapezoid(
-            h=width - margin,
+            h=width,
             w1=width - margin,
             w2=w2,
         )
         .linear_extrude(conn_height - margin)
         .rotateZ(-90)
-        .translateX(width + (width - margin) * 0.5)
+        .translateX(width * 1.5)
     )
     conn = square([width, len_]).linear_extrude(conn_height)
 
