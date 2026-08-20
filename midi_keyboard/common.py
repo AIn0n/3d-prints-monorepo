@@ -3,19 +3,24 @@ from itertools import accumulate
 
 from configuration import ConfigSchema
 from connectors import generate_male_connector, generate_female_connector
+from constants import WHITE_TO_BLACK_KEY_RATIO
+
+
+def generate_stand(x: float, y: float, conf: ConfigSchema):
+    return (
+        cylinder(h=conf.base_height_mm, r=conf.stand_r_mm)
+        - cylinder(h=conf.base_height_mm, r=conf.stand_screw_r_mm)
+    ).translate(
+        [
+            x,
+            y - conf.stand_r_mm,
+            -conf.base_height_mm,
+        ]
+    )
 
 
 def generate_octave(white_keys: int, conf: ConfigSchema):
     assert white_keys <= 7
-    white_keys_to_black_num_mapping = {
-        1: 0,
-        2: 1,
-        3: 2,
-        4: 2,
-        5: 3,
-        6: 4,
-        7: 5,
-    }
 
     wk_total_width = conf.white_key_dims.width * conf.dist_u
     octave_width = wk_total_width * white_keys
@@ -41,15 +46,10 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
         )
     )
 
-    for i in range(1, white_keys, conf.stand_density):
-        white_mount_plate += cylinder(
-            h=conf.base_height_mm, r=conf.stand_r_mm
-        ).translate(
-            [
-                i * wk_total_width,
-                white_plate_len - conf.stand_r_mm,
-                -conf.base_height_mm,
-            ]
+    if white_keys > 1:
+        white_mount_plate += generate_stand(wk_total_width, white_plate_len, conf)
+        white_mount_plate += generate_stand(
+            wk_total_width * (white_keys - 1), white_plate_len, conf
         )
 
     bw_diff = conf.white_black_keys_offset_mm + conf.mount_plate_width
@@ -64,7 +64,7 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
         generate_keys_row(
             octave_width,
             conf.dist_u,
-            b_distances[: white_keys_to_black_num_mapping[white_keys]],
+            b_distances[: WHITE_TO_BLACK_KEY_RATIO[white_keys]],
             (conf.dist_u - conf.mount_u) / 2,
             conf,
         )

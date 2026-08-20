@@ -41,8 +41,7 @@ class ConfigSchema:
     connector_dims: ConnectorDimensions = field(default_factory=ConnectorDimensions)
 
     stand_r_mm: float = 5.0
-    # each N key they will be stand
-    stand_density: int = 2
+    stand_screw_r_mm: float = 0.5
 
 
 schema = OmegaConf.structured(ConfigSchema)
