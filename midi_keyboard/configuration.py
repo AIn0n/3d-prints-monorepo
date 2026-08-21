@@ -44,4 +44,8 @@ class ConfigSchema:
     stand_screw_r_mm: float = 0.5
 
 
-schema = OmegaConf.structured(ConfigSchema)
+def load_config(path: Path = Path("default.conf.yaml")) -> OmegaConf:
+    yaml_config = OmegaConf.load(path)
+
+    schema = OmegaConf.structured(ConfigSchema)
+    return OmegaConf.merge(schema, yaml_config)

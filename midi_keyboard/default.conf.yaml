@@ -12,7 +12,7 @@ mount_u: 14.0
 keycap_u: 18.0
 keycap_height_mm: 1.5
 
-white_black_keys_offset_mm: 4
+white_black_keys_offset_mm: 6
 base_height_mm: 8
 
 connector_dims:
