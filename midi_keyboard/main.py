@@ -10,13 +10,17 @@ def generate_all():
     generate_key(
         conf.black_key_dims.width, conf.black_key_dims.length, conf
     ).save_as_stl(conf.output_dir / "black_keycap.stl")
+    print("generated black key stl")
 
     generate_key(
         conf.white_key_dims.width, conf.white_key_dims.length, conf
     ).save_as_stl(conf.output_dir / "white_keycap.stl")
+    print("generated white key stl")
 
     generate_octave(2, conf).save_as_stl(conf.output_dir / "octave_small_ah.stl")
+    print("generated small octave")
     generate_octave(7, conf).save_as_stl(conf.output_dir / "full_octave.stl")
+    print("generated full octave")
 
 
 if __name__ == "__main__":
