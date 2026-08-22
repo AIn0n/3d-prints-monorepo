@@ -31,7 +31,7 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
         )
         # slope added to the first wall - probably better to remove supports
         + generate_slope(
-            octave_width - w_distances[0] * 2,
+            octave_width - w_distances[0],
             wk_len_offset
             - conf.mount_plate_width
             - 1,  # minimal offset from mounting point to fit switch
