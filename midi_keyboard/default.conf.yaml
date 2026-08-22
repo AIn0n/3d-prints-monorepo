@@ -17,4 +17,4 @@ base_height_mm: 8
 
 connector_dims:
   base_diff_mm: 3
-  margin_mm: 0.1
+  margin_mm: 0.12
