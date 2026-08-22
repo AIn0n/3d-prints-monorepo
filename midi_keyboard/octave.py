@@ -1,7 +1,7 @@
 from solid2 import cube
 
 from connectors import generate_male_connector, generate_female_connector
-from constants import WHITE_TO_BLACK_KEY_RATIO
+from constants import get_black_key_dist
 
 from configuration import ConfigSchema
 from common import generate_keys_row, generate_slope, generate_stand
@@ -65,18 +65,13 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
     octave_width = wk_total_width * white_keys
 
     bw_diff = conf.white_black_keys_offset_mm + conf.mount_plate_width
-    b_distances = [
-        wk_total_width - conf.mount_u / 2,
-        wk_total_width,
-        wk_total_width * 2,
-        wk_total_width,
-        wk_total_width,
-    ]
+
+    b_distances = get_black_key_dist(white_keys, wk_total_width, conf.mount_u)
     black_mount_plate = (
         generate_keys_row(
             octave_width,
             conf.dist_u,
-            b_distances[: WHITE_TO_BLACK_KEY_RATIO[white_keys]],
+            b_distances,
             (conf.dist_u - conf.mount_u) / 2,
             conf,
         )
