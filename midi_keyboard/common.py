@@ -1,9 +1,20 @@
 from solid2 import square, cube, cylinder
 from itertools import accumulate
+from math import sqrt, atan2, degrees
 
 from configuration import ConfigSchema
 from connectors import generate_male_connector, generate_female_connector
 from constants import WHITE_TO_BLACK_KEY_RATIO
+
+
+def generate_slope(width: float, len_: float, height: float):
+    sqr = square([width, len_])
+    rad_angle = atan2(len_, height)
+    angle = degrees(rad_angle)
+
+    return sqr.linear_extrude(height) - sqr.linear_extrude(
+        sqrt(width**2 + len_**2)
+    ).rotateX(-angle)
 
 
 def generate_stand(x: float, y: float, conf: ConfigSchema):
@@ -26,19 +37,28 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
     octave_width = wk_total_width * white_keys
     white_plate_len = conf.white_key_dims.length * conf.dist_u
     w_distances = [(wk_total_width - conf.mount_u) / 2] + [wk_total_width] * 7
+    wk_len_offset = (white_plate_len - conf.mount_u) / 2
     white_mount_plate = (
         # upper wall, with mx mounting holes
         generate_keys_row(
             octave_width,
             white_plate_len,
             w_distances[:white_keys],
-            (white_plate_len - conf.mount_u) / 2,
+            wk_len_offset,
             conf,
         )
         # front wall of the keyboard
         + cube([octave_width, conf.mount_plate_width, conf.base_height_mm]).down(
             conf.base_height_mm
         )
+        # slope added to the first wall - probably better to remove supports
+        + generate_slope(
+            octave_width - w_distances[0] * 2,
+            wk_len_offset - 1,  # minimal offset from mounting point to fit switch
+            conf.base_height_mm,
+        )
+        .translateX(w_distances[0])
+        .down(conf.base_height_mm)
         # connectors
         + generate_female_connector(w_distances[0], white_plate_len, conf)
         + generate_male_connector(w_distances[0], white_plate_len, conf).translateX(
