@@ -9,15 +9,11 @@ WHITE_TO_BLACK_KEY_RATIO = {
 }
 
 
-def get_black_key_dist(
-    white_keys: int, white_key_width: float, mount_width: float
-) -> list[float]:
-    assert 5 >= white_keys >= 0
-
+def get_black_key_dist(white_key_width: float, mount_width: float) -> list[float]:
     return [
         white_key_width - mount_width / 2,
         white_key_width,
         white_key_width * 2,
         white_key_width,
         white_key_width,
-    ][: WHITE_TO_BLACK_KEY_RATIO[white_keys]]
+    ]

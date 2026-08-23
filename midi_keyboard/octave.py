@@ -1,10 +1,15 @@
-from solid2 import cube
+from solid2 import cube, square
 
-from connectors import generate_male_connector, generate_female_connector
-from constants import get_black_key_dist
+from connectors import (
+    generate_male_connector,
+    generate_female_connector,
+    normalize_width_len_connector,
+)
+from constants import get_black_key_dist, WHITE_TO_BLACK_KEY_RATIO
+from itertools import accumulate
 
 from configuration import ConfigSchema
-from common import generate_keys_row, generate_slope, generate_stand
+from common import generate_keys_row, slope, generate_stand
 
 
 def generate_kb_white_key_part(
@@ -28,7 +33,7 @@ def generate_kb_white_key_part(
             conf.base_height_mm
         )
         # slope added to the first wall - probably better to remove supports
-        + generate_slope(
+        + slope(
             octave_width - w_distances[0],
             wk_len_offset
             - conf.mount_plate_width
@@ -66,16 +71,18 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
 
     bw_diff = conf.white_black_keys_offset_mm + conf.mount_plate_width
 
-    b_distances = get_black_key_dist(white_keys, wk_total_width, conf.mount_u)
+    b_distances = get_black_key_dist(wk_total_width, conf.mount_u)
     black_mount_plate = (
         generate_keys_row(
             octave_width,
             conf.dist_u,
-            b_distances,
+            b_distances[: WHITE_TO_BLACK_KEY_RATIO[white_keys]],
             (conf.dist_u - conf.mount_u) / 2,
             conf,
         )
+        # middle wall, between black and white keys
         + cube([octave_width, conf.mount_plate_width, bw_diff]).down(bw_diff)
+        # Back wall of the keyboard
         + cube([octave_width, conf.mount_plate_width, bw_diff + conf.base_height_mm])
         .down(bw_diff + conf.base_height_mm)
         .translateY(conf.dist_u - conf.mount_plate_width)
@@ -84,6 +91,16 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
             octave_width
         )
     )
-    return black_mount_plate + generate_kb_white_key_part(
-        wk_total_width, octave_width, white_keys, conf
+    conn_width, _ = normalize_width_len_connector(b_distances[0], conf.dist_u)
+    mid_wall_inner_slope = slope(
+        octave_width - conn_width, bw_diff, bw_diff
+    ).translateX(conn_width)
+    key_hole = square([conf.mount_u, bw_diff]).linear_extrude(bw_diff)
+    for dist in accumulate(b_distances):
+        mid_wall_inner_slope -= key_hole.translateX(dist)
+
+    return (
+        black_mount_plate
+        + mid_wall_inner_slope.translateY(conf.mount_plate_width).down(bw_diff)
+        + generate_kb_white_key_part(wk_total_width, octave_width, white_keys, conf)
     )

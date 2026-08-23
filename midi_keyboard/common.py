@@ -5,7 +5,7 @@ from math import sqrt, atan2, degrees
 from configuration import ConfigSchema
 
 
-def generate_slope(width: float, len_: float, height: float):
+def slope(width: float, len_: float, height: float):
     sqr = square([width, len_])
     rad_angle = atan2(len_, height)
     angle = degrees(rad_angle)
