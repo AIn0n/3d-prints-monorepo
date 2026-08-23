@@ -29,9 +29,15 @@ def generate_kb_white_key_part(
         )
         +
         # front wall of the keyboard
-        cube([octave_width, conf.mount_plate_width, conf.base_height_mm]).down(
-            conf.base_height_mm
+        cube(
+            [
+                octave_width,
+                conf.mount_plate_width,
+                conf.base_height_mm + conf.mount_plate_width,
+            ]
         )
+        .down(conf.base_height_mm)
+        .translateY(-conf.mount_plate_width)
         # slope added to the first wall - probably better to remove supports
         + slope(
             octave_width - w_distances[0],
@@ -41,7 +47,6 @@ def generate_kb_white_key_part(
             conf.base_height_mm,
         )
         .translateX(w_distances[0])
-        .translateY(conf.mount_plate_width)
         .down(conf.base_height_mm)
         # connectors
         + generate_female_connector(w_distances[0], white_plate_len, conf)

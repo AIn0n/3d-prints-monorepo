@@ -16,5 +16,5 @@ white_black_keys_offset_mm: 6
 base_height_mm: 8
 
 connector_dims:
-  base_diff_mm: 3
-  margin_mm: 0.16
+  base_diff_mm: 4
+  margin_mm: 1
