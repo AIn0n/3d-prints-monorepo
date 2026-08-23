@@ -17,6 +17,9 @@ class ConnectorDimensions:
 
 @dataclass
 class ConfigSchema:
+    midi_keys_count: int
+    helpers_keys_count: int
+
     dist_u: float = 19.5
     white_key_dims: KeyDimensions = field(
         default_factory=lambda: KeyDimensions(length=1.75, width=1.25)
@@ -44,7 +47,7 @@ class ConfigSchema:
     stand_screw_r_mm: float = 0.5
 
 
-def load_config(path: Path = Path("default.conf.yaml")) -> OmegaConf:
+def load_config(path: Path = Path("default.conf.yaml")) -> ConfigSchema:
     yaml_config = OmegaConf.load(path)
 
     schema = OmegaConf.structured(ConfigSchema)
