@@ -1,4 +1,4 @@
-from solid2 import square, cylinder
+from solid2 import square, cylinder, cube
 from itertools import accumulate
 from math import sqrt, atan2, degrees
 
@@ -43,3 +43,11 @@ def generate_keys_row(
         mounting_plate -= mx_hole.translateX(sep)
 
     return mounting_plate.linear_extrude(conf.mount_plate_width)
+
+
+def arc(len_height: float, width: float):
+    return (
+        (cube([len_height, len_height, width]) - cylinder(r=len_height, h=width))
+        .rotateY(90)
+        .translateY(-len_height)
+    )

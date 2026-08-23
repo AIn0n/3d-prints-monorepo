@@ -17,7 +17,7 @@ base_height_mm: 8
 
 connector_dims:
   base_diff_mm: 4
-  margin_mm: 1
+  margin_mm: 0.5
 
 midi_keys_count: 31
 helpers_keys_count: 4

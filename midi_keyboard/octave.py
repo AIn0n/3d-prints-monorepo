@@ -9,7 +9,7 @@ from constants import get_black_key_dist, WHITE_TO_BLACK_KEY_RATIO
 from itertools import accumulate
 
 from configuration import ConfigSchema
-from common import generate_keys_row, slope, generate_stand
+from common import generate_keys_row, slope, generate_stand, arc
 
 
 def generate_kb_white_key_part(
@@ -87,6 +87,8 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
         )
         # middle wall, between black and white keys
         + cube([octave_width, conf.mount_plate_width, bw_diff]).down(bw_diff)
+        # middle wall outer arc, to make connection between white and black keys part stronger
+        + arc(bw_diff - conf.mount_plate_width, octave_width)
         # Back wall of the keyboard
         + cube([octave_width, conf.mount_plate_width, bw_diff + conf.base_height_mm])
         .down(bw_diff + conf.base_height_mm)
