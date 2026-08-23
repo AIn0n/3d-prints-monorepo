@@ -88,7 +88,7 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
         # middle wall, between black and white keys
         + cube([octave_width, conf.mount_plate_width, bw_diff]).down(bw_diff)
         # middle wall outer arc, to make connection between white and black keys part stronger
-        + arc(bw_diff - conf.mount_plate_width, octave_width)
+        + arc(bw_diff, octave_width).up(conf.mount_plate_width)
         # Back wall of the keyboard
         + cube([octave_width, conf.mount_plate_width, bw_diff + conf.base_height_mm])
         .down(bw_diff + conf.base_height_mm)
