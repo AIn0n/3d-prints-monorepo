@@ -12,11 +12,16 @@ from configuration import ConfigSchema
 from common import generate_keys_row, slope, generate_stand, arc
 
 
+def compute_white_key_offset(conf: ConfigSchema) -> float:
+    white_plate_len = conf.white_key_dims.length * conf.dist_u
+    return (white_plate_len - conf.mount_u) / 2
+
+
 def generate_kb_white_key_part(
     wk_total_width: float, octave_width: float, white_keys: float, conf: ConfigSchema
 ):
     white_plate_len = conf.white_key_dims.length * conf.dist_u
-    wk_len_offset = (white_plate_len - conf.mount_u) / 2
+    wk_len_offset = compute_white_key_offset(conf)
     w_distances = [(wk_total_width - conf.mount_u) / 2] + [wk_total_width] * 7
     plate = (
         # upper wall, with mx mounting holes
@@ -75,6 +80,10 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
     octave_width = wk_total_width * white_keys
 
     bw_diff = conf.white_black_keys_offset_mm + conf.mount_plate_width
+
+    assert bw_diff <= (compute_white_key_offset(conf) - 1), (
+        "Distance between white and black keys is too high, cannot generate arc between them"
+    )
 
     b_distances = get_black_key_dist(wk_total_width, conf.mount_u)
     black_mount_plate = (
