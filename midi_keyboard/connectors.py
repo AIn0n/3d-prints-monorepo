@@ -2,10 +2,16 @@ from configuration import ConfigSchema
 
 from solid2 import square
 from solid2.extensions.bosl2 import trapezoid
+import math
+
+
+def floor_to_half(x):
+    return math.floor(x * 2) / 2
 
 
 def normalize_width_len_connector(width: float, len_: float) -> tuple[float, float]:
-    return (width, len_) if len_ >= width * 2 else (len_ // 2, len_)
+    width, len_ = (width, len_) if len_ >= width * 2 else (len_ // 2, len_)
+    return floor_to_half(width), len_
 
 
 def generate_female_connector(
