@@ -8,11 +8,29 @@ class KeyDimensions:
     length: float
     width: float
 
+    def length_to_mm(self, conf: ConfigSchema) -> float:
+        return self.length * conf.dist_u
+
+    def width_to_mm(self, conf: ConfigSchema) -> float:
+        return self.width * conf.dist_u
+
+    def key_offset_y(self, conf: ConfigSchema) -> float:
+        return (self.length_to_mm(conf) - conf.mount_u) / 2
+
+    def key_offset_x(self, conf: ConfigSchema) -> float:
+        return (self.width_to_mm(conf) - conf.mount_u) / 2
+
 
 @dataclass
 class ConnectorDimensions:
     base_diff_mm: float = 2
     margin_mm: float = 0.06
+
+
+@dataclass
+class BackplateDimensions:
+    width_mm: float = 2
+    screw_r_mm: float = 2
 
 
 @dataclass
@@ -27,6 +45,7 @@ class ConfigSchema:
     black_key_dims: KeyDimensions = field(
         default_factory=lambda: KeyDimensions(length=1.75, width=1.0)
     )
+    backplate_dims: BackplateDimensions = field(default_factory=BackplateDimensions)
 
     rows_height_diff_mm: float = 12.0
 
@@ -51,4 +70,5 @@ def load_config(path: Path = Path("default.conf.yaml")) -> ConfigSchema:
     yaml_config = OmegaConf.load(path)
 
     schema = OmegaConf.structured(ConfigSchema)
-    return OmegaConf.merge(schema, yaml_config)
+    merged = OmegaConf.merge(schema, yaml_config)
+    return OmegaConf.to_object(merged)

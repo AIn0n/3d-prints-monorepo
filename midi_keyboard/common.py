@@ -51,3 +51,29 @@ def arc(len_height: float, width: float):
         .rotateY(90)
         .translateY(-len_height)
     )
+
+
+def generate_backplate(white_keys: int, conf: ConfigSchema):
+    wk_total_width = conf.white_key_dims.width_to_mm(conf)
+    white_plate_len = conf.white_key_dims.length_to_mm(conf)
+    total_len = white_plate_len + conf.dist_u + conf.mount_plate_width
+    backplate = cube(
+        [white_keys * wk_total_width, total_len, conf.backplate_dims.width_mm]
+    )
+    hole = cylinder(h=99999, r=conf.backplate_dims.screw_r_mm)
+    if white_keys > 1:
+        backplate -= hole.translate(
+            [
+                wk_total_width,
+                white_plate_len - conf.stand_r_mm + conf.mount_plate_width,
+                0,
+            ]
+        )
+        backplate -= hole.translate(
+            [
+                wk_total_width * (white_keys - 1),
+                white_plate_len - conf.stand_r_mm + conf.mount_plate_width,
+                0,
+            ]
+        )
+    return backplate
