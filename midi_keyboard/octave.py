@@ -4,6 +4,7 @@ from connectors import (
     generate_male_connector,
     generate_female_connector,
     normalize_width_len_connector,
+    compute_conn_height,
 )
 from constants import get_black_key_dist, WHITE_TO_BLACK_KEY_RATIO
 from itertools import accumulate
@@ -61,12 +62,22 @@ def generate_kb_white_key_part(
         plate += generate_stand(
             wk_total_width * (white_keys - 1), white_plate_len, conf
         )
-    return plate.translate(
-        [
-            0,
-            -white_plate_len,
-            -conf.white_black_keys_offset_mm - conf.mount_plate_width,
-        ]
+
+    male_connector_width, _ = normalize_width_len_connector(
+        w_distances[0], white_plate_len
+    )
+    male_connector_height = compute_conn_height(male_connector_width, conf)
+
+    return (
+        plate.translate(
+            [
+                0,
+                -white_plate_len,
+                -conf.white_black_keys_offset_mm - conf.mount_plate_width,
+            ]
+        ),
+        male_connector_width,
+        male_connector_height,
     )
 
 
@@ -80,6 +91,10 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
 
     assert bw_diff <= (conf.white_key_dims.key_offset_y(conf) - 1), (
         "Distance between white and black keys is too high, cannot generate arc between them"
+    )
+
+    white_part, wp_male_connector_width, wp_male_connector_height = (
+        generate_kb_white_key_part(octave_width, white_keys, conf)
     )
 
     b_distances = get_black_key_dist(wk_total_width, conf.mount_u)
@@ -103,6 +118,16 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
         + generate_male_connector(b_distances[0], conf.dist_u, conf).translateX(
             octave_width
         )
+        # slope between black and white part of the keyboard connector
+        + slope(
+            wp_male_connector_width, conf.dist_u, bw_diff + wp_male_connector_height
+        ).translate(
+            [
+                octave_width - wp_male_connector_width,
+                0,
+                -(bw_diff + wp_male_connector_height),
+            ]
+        )
     )
     conn_width, _ = normalize_width_len_connector(b_distances[0], conf.dist_u)
     mid_wall_inner_slope = slope(
@@ -115,5 +140,5 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
     return (
         black_mount_plate
         + mid_wall_inner_slope.translateY(conf.mount_plate_width).down(bw_diff)
-        + generate_kb_white_key_part(octave_width, white_keys, conf)
+        + white_part
     )

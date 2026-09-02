@@ -14,11 +14,16 @@ def normalize_width_len_connector(width: float, len_: float) -> tuple[float, flo
     return floor_to_half(width), len_
 
 
+def compute_conn_height(width: float, conf: ConfigSchema) -> float:
+    """Takes already normalized width"""
+    return min(width, conf.base_height_mm)
+
+
 def generate_female_connector(
     width: float, len_: float, conf: ConfigSchema, downscale: bool = True
 ):
     width, len_ = normalize_width_len_connector(width, len_)
-    conn_height = min(width, conf.base_height_mm)
+    conn_height = compute_conn_height(width, conf)
     w2 = width + conf.connector_dims.base_diff_mm
 
     female_conn = (
@@ -49,7 +54,7 @@ def generate_male_connector(
     width, len_ = normalize_width_len_connector(width, len_)
     margin = conf.connector_dims.margin_mm
 
-    conn_height = min(width, conf.base_height_mm)
+    conn_height = compute_conn_height(width, conf)
     w2 = width + conf.connector_dims.base_diff_mm - margin
 
     male_conn = (
