@@ -1,8 +1,64 @@
 from solid2 import square, cylinder, cube
 from itertools import accumulate
-from math import sqrt, atan2, degrees
+from math import sqrt, atan2, degrees, floor
+from dataclasses import dataclass
+
+from enum import Enum, auto
 
 from configuration import ConfigSchema
+
+
+def floor_to_half(x):
+    return floor(x * 2) / 2
+
+
+class Anchor(Enum):
+    bottom_front_left = auto()
+    bottom_front_right = auto()
+    bottom_back_left = auto()
+    bottom_back_right = auto()
+    top_front_left = auto()
+    top_front_right = auto()
+    top_back_left = auto()
+    top_back_right = auto()
+
+
+class ModelBuilder:
+    def __init__(self, x: float, y: float, z: float, dx: float, dy: float, dz: float):
+
+        self.x: float = x
+        self.y: float = y
+        self.z: float = z
+        self.dx: float = dx
+        self.dy: float = dy
+        self.dz: float = dz
+
+    def move(self, pos: tuple[float, float, float]) -> None:
+        self.x += pos[0]
+        self.y += pos[1]
+        self.z += pos[2]
+
+    def move_anchor(self, anchor: Anchor) -> None:
+        match anchor:
+            case Anchor.bottom_front_right:
+                self.y -= self.dy
+            case Anchor.bottom_back_left:
+                self.x -= self.dx
+            case Anchor.bottom_back_right:
+                self.x -= self.dx
+                self.y -= self.dy
+            case Anchor.top_front_left:
+                self.z -= self.dz
+            case Anchor.top_front_right:
+                self.z -= self.dz
+                self.y -= self.dy
+            case Anchor.top_back_left:
+                self.z -= self.dz
+                self.x -= self.dx
+            case Anchor.top_back_right:
+                self.z -= self.dz
+                self.x -= self.dx
+                self.y -= self.dy
 
 
 def slope(width: float, len_: float, height: float):
