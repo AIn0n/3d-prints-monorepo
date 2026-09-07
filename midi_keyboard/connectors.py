@@ -1,4 +1,5 @@
-from common import ModelBuilder, floor_to_half
+from common import floor_to_half
+from model_builder import ModelBuilder
 from configuration import ConfigSchema
 
 from solid2 import square
