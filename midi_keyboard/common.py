@@ -1,7 +1,7 @@
 from solid2 import square, cylinder, cube
 from itertools import accumulate
 from math import sqrt, atan2, degrees, floor
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 from enum import Enum, auto
 
@@ -12,15 +12,29 @@ def floor_to_half(x):
     return floor(x * 2) / 2
 
 
-class Anchor(Enum):
-    bottom_front_left = auto()
-    bottom_front_right = auto()
-    bottom_back_left = auto()
-    bottom_back_right = auto()
-    top_front_left = auto()
-    top_front_right = auto()
-    top_back_left = auto()
-    top_back_right = auto()
+class XPos(Enum):
+    LEFT = auto()
+    CENTER = auto()
+    RIGHT = auto()
+
+
+class YPos(Enum):
+    FRONT = auto()
+    CENTER = auto()
+    BACK = auto()
+
+
+class ZPos(Enum):
+    TOP = auto()
+    CENTER = auto()
+    BOTTOM = auto()
+
+
+@dataclass
+class RelativeCoords:
+    xpos: XPos | None = None
+    ypos: YPos | None = None
+    zpos: ZPos | None = None
 
 
 class ModelBuilder:
@@ -38,27 +52,64 @@ class ModelBuilder:
         self.y += pos[1]
         self.z += pos[2]
 
-    def move_anchor(self, anchor: Anchor) -> None:
-        match anchor:
-            case Anchor.bottom_front_right:
-                self.y -= self.dy
-            case Anchor.bottom_back_left:
+    def move_rel(
+        self,
+        other: ModelBuilder,
+        anchor: RelativeCoords,
+        alignment: RelativeCoords | None = None,
+    ) -> None:
+        self.x = other.x
+        self.y = other.y
+        self.z = other.z
+
+        assert any(asdict(anchor).values()), (
+            "At least one value to anchor have to be set up"
+        )
+
+        if anchor.xpos is not None:
+            if anchor.xpos == XPos.LEFT:
                 self.x -= self.dx
-            case Anchor.bottom_back_right:
-                self.x -= self.dx
+            else:
+                self.x += other.dx
+
+        if anchor.ypos is not None:
+            if anchor.ypos == YPos.FRONT:
                 self.y -= self.dy
-            case Anchor.top_front_left:
+            else:
+                self.y += other.dy
+
+        if anchor.zpos is not None:
+            if anchor.zpos == ZPos.BOTTOM:
                 self.z -= self.dz
-            case Anchor.top_front_right:
-                self.z -= self.dz
-                self.y -= self.dy
-            case Anchor.top_back_left:
-                self.z -= self.dz
-                self.x -= self.dx
-            case Anchor.top_back_right:
-                self.z -= self.dz
-                self.x -= self.dx
-                self.y -= self.dy
+            else:
+                self.z += other.dz
+
+        if alignment is None:
+            return None
+
+        if alignment.xpos is not None:
+            if alignment.xpos == XPos.LEFT:
+                self.x = other.x
+            elif alignment.xpos == XPos.CENTER:
+                self.x = (self.dx - other.dx) / 2
+            else:
+                self.x = self.dx - other.dx
+
+        if alignment.ypos is not None:
+            if alignment.ypos == YPos.FRONT:
+                self.y = other.y
+            elif alignment.ypos == YPos.CENTER:
+                self.y = (self.dy - other.dy) / 2
+            else:
+                self.y = self.dy - other.dy
+
+        if alignment.zpos is not None:
+            if alignment.zpos == ZPos.TOP:
+                self.z = other.z
+            elif alignment.zpos == YPos.CENTER:
+                self.z = (self.dz - other.dz) / 2
+            else:
+                self.z = self.dz - other.dz
 
 
 def slope(width: float, len_: float, height: float):

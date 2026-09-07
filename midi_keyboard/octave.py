@@ -9,7 +9,9 @@ from common import generate_keys_row, slope, generate_stand, arc, ModelBuilder
 
 
 class OctaveWhitePart(ModelBuilder):
-    def __init__(self, pos: tuple[float, float, float], white_keys: int, conf: ConfigSchema):
+    def __init__(
+        self, pos: tuple[float, float, float], white_keys: int, conf: ConfigSchema
+    ):
         self.white_keys = white_keys
         self.conf = conf
         octave_width = wk_total_width * white_keys
@@ -18,7 +20,7 @@ class OctaveWhitePart(ModelBuilder):
         wk_len_offset = conf.white_key_dims.key_offset_y(conf)
         white_plate_len = conf.white_key_dims.length_to_mm(conf)
 
-        self.male_connector = ConnectorBuilder([])
+        self.male_connector = ConnectorBuilder()
         self.female_connector = ConnectorBuilder()
         # upper wall, with mx mounting holes
         self.key_rows = generate_keys_row(
@@ -28,36 +30,42 @@ class OctaveWhitePart(ModelBuilder):
             wk_len_offset,
             conf,
         )
-        self.front_wall = cube(
-            [
-                octave_width,
-                conf.mount_plate_width,
-                conf.base_height_mm + conf.mount_plate_width,
-            ]
-        ).down(conf.base_height_mm).translateY(-conf.mount_plate_width)
+        self.front_wall = (
+            cube(
+                [
+                    octave_width,
+                    conf.mount_plate_width,
+                    conf.base_height_mm + conf.mount_plate_width,
+                ]
+            )
+            .down(conf.base_height_mm)
+            .translateY(-conf.mount_plate_width)
+        )
 
-        self.front_wall_slope = slope(
-            octave_width - w_distances[0],
-            wk_len_offset
-            - conf.mount_plate_width
-            - 1,  # minimal offset from mounting point to fit switch
-            conf.base_height_mm,
-        ).translateX(w_distances[0]).down(conf.base_height_mm)
+        self.front_wall_slope = (
+            slope(
+                octave_width - w_distances[0],
+                wk_len_offset
+                - conf.mount_plate_width
+                - 1,  # minimal offset from mounting point to fit switch
+                conf.base_height_mm,
+            )
+            .translateX(w_distances[0])
+            .down(conf.base_height_mm)
+        )
 
         x, y, z = pos
         super().__init__(x, y, z, octave_width, white_plate_len, 0)
-
 
 
 def generate_kb_white_key_part(
     octave_width: float, white_keys: float, conf: ConfigSchema
 ):
     plate = (
-
         # slope added to the first wall - probably better to remove supports
-        + 
+        +
         # connectors
-        + generate_female_connector(w_distances[0], white_plate_len, conf)
+        +generate_female_connector(w_distances[0], white_plate_len, conf)
         + generate_male_connector(w_distances[0], white_plate_len, conf).translateX(
             octave_width
         )

@@ -8,10 +8,10 @@ from solid2.extensions.bosl2 import trapezoid
 class ConnectorBuilder(ModelBuilder):
     def __init__(
         self,
-        pos: tuple[float, float, float],
         width: float,
         len_: float,
         conf: ConfigSchema,
+        pos: tuple[float, float, float] = [0, 0, 0],
     ) -> ConnectorBuilder:
         self.conf = conf
         x, y, z = pos
