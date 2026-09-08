@@ -3,6 +3,8 @@ from solid2 import cube, square
 from connectors import ConnectorBuilder
 from constants import get_black_key_dist, WHITE_TO_BLACK_KEY_RATIO
 from itertools import accumulate
+from functools import cached_property
+from typing import Collection
 
 from configuration import ConfigSchema
 from common import (
@@ -16,6 +18,10 @@ from model_builder import ModelBuilder, RelativeCoords, ZPos, XPos, YPos
 
 
 class OctaveWhitePartBuilder(ModelBuilder):
+    @cached_property
+    def movable_parts(self) -> Collection[ModelBuilder]:
+        return [attr for attr in vars(self).values if isinstance(attr, ModelBuilder)]
+
     def __init__(self, white_keys: int, conf: ConfigSchema):
         self.conf = conf
         self.white_keys = white_keys
@@ -78,24 +84,14 @@ class OctaveWhitePartBuilder(ModelBuilder):
         anchor: RelativeCoords,
         alignment: RelativeCoords | None = None,
     ) -> None:
-        self.key_row.move_rel(other, anchor, alignment)
-        self.male_connector.move_rel(other, anchor, alignment)
-        self.female_connector.move_rel(other, anchor, alignment)
-        self.front_wall.move_rel(other, anchor, alignment)
-        self.front_wall_slope.move_rel(other, anchor, alignment)
-        self.left_stand.move_rel(other, anchor, alignment)
-        self.right_stand.move_rel(other, anchor, alignment)
+        for part in self.movable_parts:
+            part.move_rel(other, anchor, alignment)
 
         return super().move_rel(other, anchor, alignment)
 
     def move(self, pos: tuple[float, float, float]) -> None:
-        self.key_row.move(pos)
-        self.male_connector.move(pos)
-        self.female_connector.move(pos)
-        self.front_wall.move(pos)
-        self.front_wall_slope.move(pos)
-        self.left_stand.move(pos)
-        self.right_stand.move(pos)
+        for part in self.movable_parts:
+            part.move(pos)
 
         return super().move(pos)
 
