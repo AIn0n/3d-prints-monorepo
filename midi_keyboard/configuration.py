@@ -64,6 +64,7 @@ class ConfigSchema:
 
     stand_r_mm: float = 5.0
     stand_screw_r_mm: float = 0.5
+    min_key_margin_mm: float = 0.5
 
 
 def load_config(path: Path = Path("default.conf.yaml")) -> ConfigSchema:

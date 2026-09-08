@@ -17,8 +17,7 @@ class ConnectorBuilder(ModelBuilder):
         self.conf = conf
         x, y, z = pos
         width, len_ = self._normalize_width_len_connector(width, len_)
-        height = self._compute_conn_height(width, conf)
-        super().__init__(x, y, z, width, len_, height)
+        super().__init__(x, y, z, width, len_, self._compute_conn_height(width, conf))
 
     @staticmethod
     def _normalize_width_len_connector(
@@ -32,7 +31,7 @@ class ConnectorBuilder(ModelBuilder):
         """Takes already normalized width"""
         return min(width, conf.base_height_mm)
 
-    def generate_female_connector(self, downscale: bool = True):
+    def generate_female_connector(self):
         w2 = self.dx + self.conf.connector_dims.base_diff_mm
 
         female_conn = (
@@ -54,9 +53,9 @@ class ConnectorBuilder(ModelBuilder):
         for i in range(conn_n):
             conn -= female_conn.translateY(adjusted_offset / 2 + i * adjusted_offset)
 
-        return conn.down(self.dz) if downscale else conn
+        return conn
 
-    def _generate_male_connector(self, downscale: bool = True):
+    def _generate_male_connector(self):
         margin = self.conf.connector_dims.margin_mm
         w2 = self.dx + self.conf.connector_dims.base_diff_mm - margin
 
@@ -79,7 +78,7 @@ class ConnectorBuilder(ModelBuilder):
         for i in range(conn_n):
             conn += male_conn.translateY(adjusted_offset / 2 + i * adjusted_offset)
 
-        return conn.translateX(-self.dx).down(self.dz) if downscale else conn
+        return conn
 
     def build(self, male: bool):
         model = (

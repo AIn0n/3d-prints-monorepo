@@ -3,20 +3,11 @@ from itertools import accumulate
 from math import sqrt, atan2, degrees, floor
 
 from configuration import ConfigSchema
+from model_builder import ModelBuilder
 
 
 def floor_to_half(x):
     return floor(x * 2) / 2
-
-
-def slope(width: float, len_: float, height: float):
-    sqr = square([width, len_])
-    rad_angle = atan2(len_, height)
-    angle = degrees(rad_angle)
-
-    return sqr.linear_extrude(height) - sqr.linear_extrude(
-        sqrt(width**2 + len_**2)
-    ).rotateX(-angle)
 
 
 def generate_stand(x: float, y: float, conf: ConfigSchema):
@@ -32,21 +23,73 @@ def generate_stand(x: float, y: float, conf: ConfigSchema):
     )
 
 
-def generate_keys_row(
-    plate_width: float,
-    plate_length: float,
-    key_sep_distances: list[float],
-    y_offset: float,
-    conf: ConfigSchema,
-):
-    u = conf.mount_u
-    mx_hole = square([u, u]).translateY(y_offset)
-    mounting_plate = square([plate_width, plate_length])
+class StandBuilder(ModelBuilder):
+    def __init__(self, conf: ConfigSchema):
+        diameter = conf.stand_r_mm * 2
+        self.r = conf.stand_r_mm
+        self.h = conf.base_height_mm
+        self.hole_r = conf.stand_screw_r_mm
+        super().__init__(0, 0, 0, diameter, diameter, conf.base_height_mm)
 
-    for sep in accumulate(key_sep_distances):
-        mounting_plate -= mx_hole.translateX(sep)
+    def _slope(self):
+        return cylinder(h=self.h, r=self.r) - cylinder(h=self.h, r=self.hole_r)
 
-    return mounting_plate.linear_extrude(conf.mount_plate_width)
+    def build(self):
+        return self._slope().translate([self.x, self.y, self.z])
+
+
+class SlopeBuilder(ModelBuilder):
+    def __init__(self, dx, dy, dz):
+        super().__init__(0, 0, 0, dx, dy, dz)
+
+    def _slope(self):
+        sqr = square([self.dx, self.dy])
+        rad_angle = atan2(self.dy, self.dz)
+        angle = degrees(rad_angle)
+
+        return sqr.linear_extrude(self.dz) - sqr.linear_extrude(
+            sqrt(self.dx**2 + self.dy**2)
+        ).rotateX(-angle)
+
+    def build(self):
+        return self._slope().translate([self.x, self.y, self.z])
+
+
+class CubeBuilder(ModelBuilder):
+    def __init__(self, dx, dy, dz) -> None:
+        super().__init__(0, 0, 0, dx, dy, dz)
+
+    def build(self):
+        return cube([self.dx, self.dy, self.dz]).translate([self.x, self.y, self.z])
+
+
+class KeyRowBuilder(ModelBuilder):
+    def __init__(
+        self,
+        width: float,
+        len_: float,
+        x_key_offsets: list[float],
+        y_offset: float,
+        conf: ConfigSchema,
+    ):
+        self.conf = conf
+        self.x_key_offsets = x_key_offsets
+        self.y_offset = y_offset
+        super().__init__(0, 0, 0, width, len_, self.conf.mount_plate_width)
+
+    def generate_key_row(self):
+        mx_hole = square([self.conf.mount_u, self.conf.mount_u]).translateY(
+            self.y_offset
+        )
+        mounting_plate = square([self.dx, self.dy])
+
+        for sep in accumulate(self.x_key_offsets):
+            mounting_plate -= mx_hole.translateX(sep)
+
+        return mounting_plate.linear_extrude(self.dz)
+
+    def build(self):
+        return self.generate_key_row().translate([self.x, self.y, self.z])
 
 
 def arc(len_height: float, width: float):

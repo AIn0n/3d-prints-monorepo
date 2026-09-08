@@ -5,93 +5,111 @@ from constants import get_black_key_dist, WHITE_TO_BLACK_KEY_RATIO
 from itertools import accumulate
 
 from configuration import ConfigSchema
-from common import generate_keys_row, slope, generate_stand, arc, ModelBuilder
+from common import (
+    arc,
+    KeyRowBuilder,
+    CubeBuilder,
+    SlopeBuilder,
+    StandBuilder,
+)
+from model_builder import ModelBuilder, RelativeCoords, ZPos, XPos, YPos
 
 
-class OctaveWhitePart(ModelBuilder):
-    def __init__(
-        self, pos: tuple[float, float, float], white_keys: int, conf: ConfigSchema
-    ):
-        self.white_keys = white_keys
+class OctaveWhitePartBuilder(ModelBuilder):
+    def __init__(self, white_keys: int, conf: ConfigSchema):
         self.conf = conf
-        octave_width = wk_total_width * white_keys
+        self.white_keys = white_keys
         wk_total_width = conf.white_key_dims.width_to_mm(conf)
+        octave_width = wk_total_width * white_keys
         w_distances = [conf.white_key_dims.key_offset_x(conf)] + [wk_total_width] * 7
         wk_len_offset = conf.white_key_dims.key_offset_y(conf)
         white_plate_len = conf.white_key_dims.length_to_mm(conf)
 
-        self.male_connector = ConnectorBuilder()
-        self.female_connector = ConnectorBuilder()
         # upper wall, with mx mounting holes
-        self.key_rows = generate_keys_row(
+        self.key_row = KeyRowBuilder(
+            octave_width, white_plate_len, w_distances, wk_len_offset, conf
+        )
+        self.male_connector = ConnectorBuilder(w_distances[0], white_plate_len, conf)
+        self.female_connector = ConnectorBuilder(w_distances[0], white_plate_len, conf)
+        self.front_wall = CubeBuilder(
             octave_width,
-            white_plate_len,
-            w_distances[:white_keys],
-            wk_len_offset,
-            conf,
+            conf.mount_plate_width,
+            conf.base_height_mm + conf.mount_plate_width,
         )
-        self.front_wall = (
-            cube(
-                [
-                    octave_width,
-                    conf.mount_plate_width,
-                    conf.base_height_mm + conf.mount_plate_width,
-                ]
-            )
-            .down(conf.base_height_mm)
-            .translateY(-conf.mount_plate_width)
+        self.front_wall_slope = SlopeBuilder(
+            octave_width - w_distances[0],
+            wk_len_offset - conf.mount_plate_width - conf.min_key_margin_mm,
+            conf.base_height_mm,
         )
+        self.left_stand = StandBuilder(conf)
+        self.right_stand = StandBuilder(conf)
 
-        self.front_wall_slope = (
-            slope(
-                octave_width - w_distances[0],
-                wk_len_offset
-                - conf.mount_plate_width
-                - 1,  # minimal offset from mounting point to fit switch
-                conf.base_height_mm,
-            )
-            .translateX(w_distances[0])
-            .down(conf.base_height_mm)
+        self.male_connector.move_rel(
+            self.key_row,
+            RelativeCoords(zpos=ZPos.BOTTOM),
+            RelativeCoords(xpos=XPos.RIGHT, ypos=YPos.CENTER),
         )
-
-        x, y, z = pos
-        super().__init__(x, y, z, octave_width, white_plate_len, 0)
-
-
-def generate_kb_white_key_part(
-    octave_width: float, white_keys: float, conf: ConfigSchema
-):
-    plate = (
-        # slope added to the first wall - probably better to remove supports
-        +
-        # connectors
-        +generate_female_connector(w_distances[0], white_plate_len, conf)
-        + generate_male_connector(w_distances[0], white_plate_len, conf).translateX(
-            octave_width
+        self.female_connector.move_rel(
+            self.key_row,
+            RelativeCoords(zpos=ZPos.BOTTOM),
+            RelativeCoords(xpos=XPos.LEFT, ypos=YPos.CENTER),
         )
-    )
-    if white_keys > 1:
-        plate += generate_stand(wk_total_width, white_plate_len, conf)
-        plate += generate_stand(
-            wk_total_width * (white_keys - 1), white_plate_len, conf
+        self.front_wall.move_rel(
+            self.key_row, RelativeCoords(ypos=YPos.FRONT), RelativeCoords(zpos=ZPos.TOP)
+        )
+        self.front_wall_slope.move_rel(
+            self.front_wall,
+            RelativeCoords(ypos=YPos.BACK),
+            RelativeCoords(xpos=XPos.RIGHT, zpos=ZPos.BOTTOM),
+        )
+        self.left_stand.move_rel(self.key_row, RelativeCoords(zpos=ZPos.BOTTOM))
+        self.right_stand.move_rel(self.key_row, RelativeCoords(zpos=ZPos.BOTTOM))
+
+        self.left_stand.move([wk_total_width, white_plate_len - self.left_stand.r, 0])
+        self.right_stand.move(
+            [wk_total_width * (white_keys - 1), white_plate_len - self.right_stand.r, 0]
         )
 
-    male_connector_width, _ = normalize_width_len_connector(
-        w_distances[0], white_plate_len
-    )
-    male_connector_height = compute_conn_height(male_connector_width, conf)
+        super().__init__(0, 0, 0, octave_width, white_plate_len, 0)
 
-    return (
-        plate.translate(
-            [
-                0,
-                -white_plate_len,
-                -conf.white_black_keys_offset_mm - conf.mount_plate_width,
-            ]
-        ),
-        male_connector_width,
-        male_connector_height,
-    )
+    def move_rel(
+        self,
+        other: ModelBuilder,
+        anchor: RelativeCoords,
+        alignment: RelativeCoords | None = None,
+    ) -> None:
+        self.key_row.move_rel(other, anchor, alignment)
+        self.male_connector.move_rel(other, anchor, alignment)
+        self.female_connector.move_rel(other, anchor, alignment)
+        self.front_wall.move_rel(other, anchor, alignment)
+        self.front_wall_slope.move_rel(other, anchor, alignment)
+        self.left_stand.move_rel(other, anchor, alignment)
+        self.right_stand.move_rel(other, anchor, alignment)
+
+        return super().move_rel(other, anchor, alignment)
+
+    def move(self, pos: tuple[float, float, float]) -> None:
+        self.key_row.move(pos)
+        self.male_connector.move(pos)
+        self.female_connector.move(pos)
+        self.front_wall.move(pos)
+        self.front_wall_slope.move(pos)
+        self.left_stand.move(pos)
+        self.right_stand.move(pos)
+
+        return super().move(pos)
+
+    def build(self):
+        model = (
+            self.key_row.build()
+            + self.male_connector.build(male=True)
+            + self.female_connector.build(male=False)
+            + self.front_wall.build()
+            + self.front_wall_slope.build()
+        )
+        if self.white_keys > 1:
+            model += self.left_stand.build() + self.right_stand.build()
+        return model
 
 
 def generate_octave(white_keys: int, conf: ConfigSchema):
