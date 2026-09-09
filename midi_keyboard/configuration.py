@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from omegaconf import OmegaConf
 from pathlib import Path
+from typing import cast
 
 
 @dataclass
@@ -72,4 +73,4 @@ def load_config(path: Path = Path("default.conf.yaml")) -> ConfigSchema:
 
     schema = OmegaConf.structured(ConfigSchema)
     merged = OmegaConf.merge(schema, yaml_config)
-    return OmegaConf.to_object(merged)
+    return cast(ConfigSchema, OmegaConf.to_object(merged))

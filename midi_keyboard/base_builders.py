@@ -1,4 +1,7 @@
 from dataclasses import dataclass, asdict
+from typing import Collection, Sequence, Any
+from abc import ABC, abstractmethod
+from functools import cached_property
 
 from enum import Enum, auto
 
@@ -28,7 +31,7 @@ class RelativeCoords:
     zpos: ZPos | None = None
 
 
-class ModelBuilder:
+class ModelBuilder(ABC):
     def __init__(self, x: float, y: float, z: float, dx: float, dy: float, dz: float):
         self.x: float = x
         self.y: float = y
@@ -37,7 +40,8 @@ class ModelBuilder:
         self.dy: float = dy
         self.dz: float = dz
 
-    def move(self, pos: tuple[float, float, float]) -> None:
+    def move(self, pos: Sequence[float]) -> None:
+        assert len(pos) == 3
         self.x += pos[0]
         self.y += pos[1]
         self.z += pos[2]
@@ -100,3 +104,29 @@ class ModelBuilder:
                 self.z = (other.dz - self.dz) / 2
             else:
                 self.z = other.dz - self.dz
+
+    @abstractmethod
+    def build(self) -> Any: ...
+
+
+class GroupBuilder(ModelBuilder):
+    @cached_property
+    def movable_parts(self) -> Collection[ModelBuilder]:
+        return [attr for attr in vars(self).values() if isinstance(attr, ModelBuilder)]
+
+    def move_rel(
+        self,
+        other: ModelBuilder,
+        anchor: RelativeCoords,
+        alignment: RelativeCoords | None = None,
+    ) -> None:
+        for part in self.movable_parts:
+            part.move_rel(other, anchor, alignment)
+
+        return super().move_rel(other, anchor, alignment)
+
+    def move(self, pos: Sequence[float]) -> None:
+        for part in self.movable_parts:
+            part.move(pos)
+
+        return super().move(pos)

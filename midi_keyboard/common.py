@@ -3,7 +3,7 @@ from itertools import accumulate
 from math import sqrt, atan2, degrees, floor
 
 from configuration import ConfigSchema
-from model_builder import ModelBuilder
+from base_builders import ModelBuilder
 
 
 def floor_to_half(x):

@@ -3,8 +3,6 @@ from solid2 import cube, square
 from connectors import ConnectorBuilder
 from constants import get_black_key_dist, WHITE_TO_BLACK_KEY_RATIO
 from itertools import accumulate
-from functools import cached_property
-from typing import Collection
 
 from configuration import ConfigSchema
 from common import (
@@ -14,14 +12,10 @@ from common import (
     SlopeBuilder,
     StandBuilder,
 )
-from model_builder import ModelBuilder, RelativeCoords, ZPos, XPos, YPos
+from base_builders import GroupBuilder, RelativeCoords, ZPos, XPos, YPos
 
 
-class OctaveWhitePartBuilder(ModelBuilder):
-    @cached_property
-    def movable_parts(self) -> Collection[ModelBuilder]:
-        return [attr for attr in vars(self).values if isinstance(attr, ModelBuilder)]
-
+class OctaveWhitePartBuilder(GroupBuilder):
     def __init__(self, white_keys: int, conf: ConfigSchema):
         self.conf = conf
         self.white_keys = white_keys
@@ -36,7 +30,9 @@ class OctaveWhitePartBuilder(ModelBuilder):
             octave_width, white_plate_len, w_distances, wk_len_offset, conf
         )
         self.male_connector = ConnectorBuilder(w_distances[0], white_plate_len, conf)
-        self.female_connector = ConnectorBuilder(w_distances[0], white_plate_len, conf)
+        self.female_connector = ConnectorBuilder(
+            w_distances[0], white_plate_len, conf, male=False
+        )
         self.front_wall = CubeBuilder(
             octave_width,
             conf.mount_plate_width,
@@ -78,28 +74,11 @@ class OctaveWhitePartBuilder(ModelBuilder):
 
         super().__init__(0, 0, 0, octave_width, white_plate_len, 0)
 
-    def move_rel(
-        self,
-        other: ModelBuilder,
-        anchor: RelativeCoords,
-        alignment: RelativeCoords | None = None,
-    ) -> None:
-        for part in self.movable_parts:
-            part.move_rel(other, anchor, alignment)
-
-        return super().move_rel(other, anchor, alignment)
-
-    def move(self, pos: tuple[float, float, float]) -> None:
-        for part in self.movable_parts:
-            part.move(pos)
-
-        return super().move(pos)
-
     def build(self):
         model = (
             self.key_row.build()
-            + self.male_connector.build(male=True)
-            + self.female_connector.build(male=False)
+            + self.male_connector.build()
+            + self.female_connector.build()
             + self.front_wall.build()
             + self.front_wall_slope.build()
         )

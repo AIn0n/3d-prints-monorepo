@@ -1,5 +1,5 @@
 from common import floor_to_half
-from model_builder import ModelBuilder
+from base_builders import ModelBuilder
 from configuration import ConfigSchema
 
 from solid2 import square
@@ -12,10 +12,11 @@ class ConnectorBuilder(ModelBuilder):
         width: float,
         len_: float,
         conf: ConfigSchema,
-        pos: tuple[float, float, float] = [0, 0, 0],
-    ) -> ConnectorBuilder:
+        male: bool = True,
+    ) -> None:
         self.conf = conf
-        x, y, z = pos
+        self.male = male
+        x, y, z = [0, 0, 0]
         width, len_ = self._normalize_width_len_connector(width, len_)
         super().__init__(x, y, z, width, len_, self._compute_conn_height(width, conf))
 
@@ -80,10 +81,10 @@ class ConnectorBuilder(ModelBuilder):
 
         return conn
 
-    def build(self, male: bool):
+    def build(self):
         model = (
             self._generate_male_connector()
-            if male
+            if self.male
             else self.generate_female_connector()
         )
         return model.translate([self.x, self.y, self.z])
