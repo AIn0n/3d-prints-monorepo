@@ -4,14 +4,8 @@ from connectors import ConnectorBuilder
 from constants import get_black_key_dist, WHITE_TO_BLACK_KEY_RATIO
 from itertools import accumulate
 
-from configuration import ConfigSchema
-from common import (
-    arc,
-    KeyRowBuilder,
-    CubeBuilder,
-    SlopeBuilder,
-    StandBuilder,
-)
+from configuration import ConfigSchema, KeyDimensions
+from common import KeyRowBuilder, CubeBuilder, SlopeBuilder, StandBuilder, ArcBuilder
 from base_builders import GroupBuilder, RelativeCoords, ZPos, XPos, YPos
 
 
@@ -21,17 +15,17 @@ class OctaveWhitePartBuilder(GroupBuilder):
         self.white_keys = white_keys
         wk_total_width = conf.white_key_dims.width_to_mm(conf)
         octave_width = wk_total_width * white_keys
-        w_distances = [conf.white_key_dims.key_offset_x(conf)] + [wk_total_width] * 7
+        distances = [conf.white_key_dims.key_offset_x(conf)] + [wk_total_width] * 7
         wk_len_offset = conf.white_key_dims.key_offset_y(conf)
         white_plate_len = conf.white_key_dims.length_to_mm(conf)
 
         # upper wall, with mx mounting holes
         self.key_row = KeyRowBuilder(
-            octave_width, white_plate_len, w_distances, wk_len_offset, conf
+            octave_width, white_plate_len, distances, wk_len_offset, conf
         )
-        self.male_connector = ConnectorBuilder(w_distances[0], white_plate_len, conf)
+        self.male_connector = ConnectorBuilder(distances[0], white_plate_len, conf)
         self.female_connector = ConnectorBuilder(
-            w_distances[0], white_plate_len, conf, male=False
+            distances[0], white_plate_len, conf, male=False
         )
         self.front_wall = CubeBuilder(
             octave_width,
@@ -39,7 +33,7 @@ class OctaveWhitePartBuilder(GroupBuilder):
             conf.base_height_mm + conf.mount_plate_width,
         )
         self.front_wall_slope = SlopeBuilder(
-            octave_width - w_distances[0],
+            octave_width - distances[0],
             wk_len_offset - conf.mount_plate_width - conf.min_key_margin_mm,
             conf.base_height_mm,
         )
@@ -87,6 +81,32 @@ class OctaveWhitePartBuilder(GroupBuilder):
         return model
 
 
+class OctaveBlackPartBuilder(GroupBuilder):
+    def __init__(self, white_keys: int, conf: ConfigSchema) -> None:
+        wk_total_width = conf.white_key_dims.width_to_mm(conf)
+        octave_width = wk_total_width * white_keys
+        distances = get_black_key_dist(wk_total_width, conf.mount_u)
+
+        bw_diff = conf.white_black_keys_offset_mm + conf.mount_plate_width
+
+        self.key_row = KeyRowBuilder(
+            octave_width,
+            conf.dist_u,
+            distances[: WHITE_TO_BLACK_KEY_RATIO[white_keys]],
+            KeyDimensions(1, 1).key_offset_y(),
+            conf,
+        )
+        self.middle_wall = CubeBuilder(octave_width, conf.mount_plate_width, bw_diff)
+        self.outer_arc = ArcBuilder(bw_diff, octave_width)
+        self.back_wall = CubeBuilder(
+            octave_width, conf.mount_plate_width, bw_diff + conf.base_height_mm
+        )
+        self.male_connector = ConnectorBuilder(distances[0], conf.dist_u, conf)
+        self.female_connector = ConnectorBuilder(
+            distances[0], conf.dist_u, conf, male=False
+        )
+
+
 def generate_octave(white_keys: int, conf: ConfigSchema):
     assert white_keys <= 7
 
@@ -105,15 +125,8 @@ def generate_octave(white_keys: int, conf: ConfigSchema):
 
     b_distances = get_black_key_dist(wk_total_width, conf.mount_u)
     black_mount_plate = (
-        generate_keys_row(
-            octave_width,
-            conf.dist_u,
-            b_distances[: WHITE_TO_BLACK_KEY_RATIO[white_keys]],
-            (conf.dist_u - conf.mount_u) / 2,
-            conf,
-        )
         # middle wall, between black and white keys
-        + cube([octave_width, conf.mount_plate_width, bw_diff]).down(bw_diff)
+        +cube([octave_width, conf.mount_plate_width, bw_diff]).down(bw_diff)
         # middle wall outer arc, to make connection between white and black keys part stronger
         + arc(bw_diff, octave_width).up(conf.mount_plate_width)
         # Back wall of the keyboard

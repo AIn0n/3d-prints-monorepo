@@ -92,12 +92,19 @@ class KeyRowBuilder(ModelBuilder):
         return self.generate_key_row().translate([self.x, self.y, self.z])
 
 
-def arc(len_height: float, width: float):
-    return (
-        (cube([len_height, len_height, width]) - cylinder(r=len_height, h=width))
-        .rotateY(90)
-        .translateY(-len_height)
-    )
+class ArcBuilder(ModelBuilder):
+    def __init__(self, width: float, len_height: float) -> None:
+        super().__init__(0, 0, 0, width, len_height, len_height)
+
+    def _arc(self):
+        return (
+            (cube([self.dy, self.dy, self.dx]) - cylinder(r=self.dz, h=self.dx))
+            .rotateY(90)
+            .translateZ(self.dz)
+        )
+
+    def build(self):
+        return self._arc().translate([self.x, self.y, self.z])
 
 
 def generate_backplate(white_keys: int, conf: ConfigSchema):
