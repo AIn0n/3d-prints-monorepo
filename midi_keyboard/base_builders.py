@@ -1,9 +1,8 @@
-from dataclasses import dataclass, asdict
-from typing import Collection, Sequence, Any
 from abc import ABC, abstractmethod
-from functools import cached_property
-
+from dataclasses import asdict, dataclass
 from enum import Enum, auto
+from functools import cached_property
+from typing import Any, Collection, Sequence
 
 
 class XPos(Enum):
@@ -113,6 +112,19 @@ class GroupBuilder(ModelBuilder):
     @cached_property
     def movable_parts(self) -> Collection[ModelBuilder]:
         return [attr for attr in vars(self).values() if isinstance(attr, ModelBuilder)]
+
+    def update_size_and_loc(self) -> None:
+        self.x = min_x = min(el.x for el in self.movable_parts)
+        self.y = min_y = min(el.y for el in self.movable_parts)
+        self.z = min_z = min(el.z for el in self.movable_parts)
+
+        max_x = max(el.x + el.dx for el in self.movable_parts)
+        max_y = max(el.y + el.dy for el in self.movable_parts)
+        max_z = max(el.z + el.dz for el in self.movable_parts)
+
+        self.dx = max_x - min_x
+        self.dy = max_y - min_y
+        self.dz = max_z - min_z
 
     def move_rel(
         self,

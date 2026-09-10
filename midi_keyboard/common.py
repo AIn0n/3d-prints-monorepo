@@ -1,26 +1,14 @@
-from solid2 import square, cylinder, cube
 from itertools import accumulate
-from math import sqrt, atan2, degrees, floor
+from math import atan2, degrees, floor, sqrt
+from typing import Any
 
+from base_builders import GroupBuilder, ModelBuilder
 from configuration import ConfigSchema
-from base_builders import ModelBuilder
+from solid2 import cube, cylinder, square
 
 
 def floor_to_half(x):
     return floor(x * 2) / 2
-
-
-def generate_stand(x: float, y: float, conf: ConfigSchema):
-    return (
-        cylinder(h=conf.base_height_mm, r=conf.stand_r_mm)
-        - cylinder(h=conf.base_height_mm, r=conf.stand_screw_r_mm)
-    ).translate(
-        [
-            x,
-            y - conf.stand_r_mm,
-            -conf.base_height_mm,
-        ]
-    )
 
 
 class StandBuilder(ModelBuilder):
@@ -39,7 +27,7 @@ class StandBuilder(ModelBuilder):
 
 
 class SlopeBuilder(ModelBuilder):
-    def __init__(self, dx, dy, dz):
+    def __init__(self, dx: float, dy: float, dz: float):
         super().__init__(0, 0, 0, dx, dy, dz)
 
     def _slope(self):
@@ -53,6 +41,27 @@ class SlopeBuilder(ModelBuilder):
 
     def build(self):
         return self._slope().translate([self.x, self.y, self.z])
+
+
+class SquareXPunchedSlopeBuilder(SlopeBuilder):
+    def __init__(
+        self,
+        dx: float,
+        dy: float,
+        dz: float,
+        distances: list[float],
+        hole_dims: tuple[float, float],
+    ) -> None:
+        self.distances = distances
+        self.hole_x, self.hole_y = hole_dims
+        super().__init__(dx, dy, dz)
+
+    def build(self) -> Any:
+        model = super()._slope()
+        hole = cube([self.hole_x, self.hole_y, self.dz]).down(self.dz)
+        for dist in accumulate(self.distances):
+            model -= hole.translateX(dist)
+        return model.translate()
 
 
 class CubeBuilder(ModelBuilder):

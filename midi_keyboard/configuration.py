@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from omegaconf import OmegaConf
 from pathlib import Path
 from typing import cast
+
+from omegaconf import OmegaConf
 
 
 @dataclass
