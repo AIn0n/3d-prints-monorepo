@@ -91,7 +91,7 @@ class ModelBuilder(ABC):
             self.y = other.y
             if alignment.ypos == YPos.CENTER:
                 self.y += (other.dy - self.dy) / 2
-            elif alignment.ypos == YPos.FRONT:
+            elif alignment.ypos == YPos.BACK:
                 self.y += other.dy - self.dy
 
         if alignment.zpos is not None:

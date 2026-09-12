@@ -61,7 +61,7 @@ class OctaveWhitePartBuilder(GroupBuilder):
         self.front_wall_slope.move_rel(
             self.key_row,
             RelativeCoords(zpos=ZPos.BOTTOM),
-            RelativeCoords(xpos=XPos.RIGHT, ypos=YPos.BACK),
+            RelativeCoords(xpos=XPos.RIGHT, ypos=YPos.FRONT),
         )
         self.left_stand.move_rel(self.key_row, RelativeCoords(zpos=ZPos.BOTTOM))
         self.right_stand.move_rel(self.key_row, RelativeCoords(zpos=ZPos.BOTTOM))
@@ -158,7 +158,7 @@ class OctaveBuilder(GroupBuilder):
 
         self.white_part.move_rel(
             self.black_part.middle_wall,
-            RelativeCoords(zpos=ZPos.TOP),
+            RelativeCoords(zpos=ZPos.BOTTOM),
             RelativeCoords(ypos=YPos.FRONT),
         )
 
