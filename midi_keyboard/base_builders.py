@@ -51,10 +51,6 @@ class ModelBuilder(ABC):
         anchor: RelativeCoords,
         alignment: RelativeCoords | None = None,
     ) -> None:
-        self.x = other.x
-        self.y = other.y
-        self.z = other.z
-
         assert any(asdict(anchor).values()), (
             "At least one value to anchor have to be set up"
         )

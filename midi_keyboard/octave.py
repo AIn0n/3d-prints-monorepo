@@ -105,7 +105,7 @@ class OctaveBlackPartBuilder(GroupBuilder):
             conf,
         )
         self.middle_wall = CubeBuilder(octave_width, conf.mount_plate_width, bw_diff)
-        self.outer_arc = ArcBuilder(octave_width, bw_diff)
+        # self.outer_arc = ArcBuilder(octave_width, bw_diff)
         self.back_wall = CubeBuilder(
             octave_width, conf.mount_plate_width, bw_diff + conf.base_height_mm
         )
@@ -124,11 +124,11 @@ class OctaveBlackPartBuilder(GroupBuilder):
             self.key_row, RelativeCoords(ypos=YPos.BACK), RelativeCoords(zpos=ZPos.TOP)
         )
         self.middle_wall.move_rel(self.key_row, RelativeCoords(zpos=ZPos.BOTTOM))
-        self.outer_arc.move_rel(
-            self.middle_wall,
-            RelativeCoords(ypos=YPos.FRONT),
-            RelativeCoords(zpos=ZPos.BOTTOM),
-        )
+        # self.outer_arc.move_rel(
+        #     self.middle_wall,
+        #     RelativeCoords(ypos=YPos.FRONT),
+        #     RelativeCoords(zpos=ZPos.BOTTOM),
+        # )
         self.female_connector.move_rel(self.key_row, RelativeCoords(zpos=ZPos.BOTTOM))
         self.male_connector.move_rel(
             self.key_row,
@@ -148,7 +148,7 @@ class OctaveBlackPartBuilder(GroupBuilder):
         model = first.build()
         for part in rest:
             model += part.build()
-        return model.translate([self.x, self.y, self.z])
+        return model
 
 
 class OctaveBuilder(GroupBuilder):
@@ -158,8 +158,8 @@ class OctaveBuilder(GroupBuilder):
 
         self.white_part.move_rel(
             self.black_part.middle_wall,
-            RelativeCoords(zpos=ZPos.BOTTOM),
             RelativeCoords(ypos=YPos.FRONT),
+            # RelativeCoords(ypos=YPos.BACK),
         )
 
     def build(self) -> Any:
