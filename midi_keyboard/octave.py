@@ -115,7 +115,7 @@ class OctaveBlackPartBuilder(GroupBuilder):
             conf.dist_u,
             bw_diff,
             distances,
-            (conf.dist_u, conf.dist_u),
+            (conf.mount_u, conf.dist_u),
         )
 
         self.middle_wall.move_rel(self.key_row, RelativeCoords(zpos=ZPos.BOTTOM))
@@ -133,7 +133,11 @@ class OctaveBlackPartBuilder(GroupBuilder):
             RelativeCoords(zpos=ZPos.BOTTOM),
             RelativeCoords(xpos=XPos.RIGHT),
         )
-        self.internal_slope.move_rel(self.key_row, RelativeCoords(ypos=YPos.BACK))
+        self.internal_slope.move_rel(
+            self.female_connector,
+            RelativeCoords(XPos.RIGHT),
+            RelativeCoords(zpos=ZPos.TOP),
+        )
         super().__init__(0, 0, 0, 0, 0, 0)
         self.update_size_and_loc()
 

@@ -81,28 +81,25 @@ class ModelBuilder(ABC):
             return None
 
         if alignment.xpos is not None:
-            if alignment.xpos == XPos.LEFT:
-                self.x = other.x
-            elif alignment.xpos == XPos.CENTER:
-                self.x = (other.dx - self.dx) / 2
+            self.x = other.x
+            if alignment.xpos == XPos.CENTER:
+                self.x += (other.dx - self.dx) / 2
             else:
-                self.x = other.dx - self.dx
+                self.x += other.dx - self.dx
 
         if alignment.ypos is not None:
-            if alignment.ypos == YPos.BACK:
-                self.y = other.y
-            elif alignment.ypos == YPos.CENTER:
-                self.y = (other.dy - self.dy) / 2
+            self.y = other.y
+            if alignment.ypos == YPos.CENTER:
+                self.y += (other.dy - self.dy) / 2
             else:
-                self.y = other.dy - self.dy
+                self.y += other.dy - self.dy
 
         if alignment.zpos is not None:
-            if alignment.zpos == ZPos.BOTTOM:
-                self.z = other.z
-            elif alignment.zpos == YPos.CENTER:
-                self.z = (other.dz - self.dz) / 2
+            self.z = other.z
+            if alignment.zpos == YPos.CENTER:
+                self.z += (other.dz - self.dz) / 2
             else:
-                self.z = other.dz - self.dz
+                self.z += other.dz - self.dz
 
     @abstractmethod
     def build(self) -> Any: ...

@@ -57,11 +57,11 @@ class SquareXPunchedSlopeBuilder(SlopeBuilder):
         super().__init__(dx, dy, dz)
 
     def build(self) -> Any:
-        model = super()._slope()
-        hole = cube([self.hole_x, self.hole_y, self.dz]).down(self.dz)
+        model = super().build()
+        hole = cube([self.hole_x, self.hole_y, self.dz])
         for dist in accumulate(self.distances):
-            model -= hole.translateX(dist)
-        return model.translate()
+            model -= hole.translateX(dist).translateZ(self.z)
+        return model
 
 
 class CubeBuilder(ModelBuilder):
