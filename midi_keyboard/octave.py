@@ -16,7 +16,7 @@ from constants import WHITE_TO_BLACK_KEY_RATIO, get_black_key_dist
 
 class OctaveWhitePartBuilder(GroupBuilder):
     def __init__(self, white_keys: int, conf: ConfigSchema):
-        self.conf = conf
+        assert white_keys <= 7
         self.white_keys = white_keys
         wk_total_width = conf.white_key_dims.width_to_mm(conf)
         octave_width = wk_total_width * white_keys
@@ -88,6 +88,8 @@ class OctaveWhitePartBuilder(GroupBuilder):
 
 class OctaveBlackPartBuilder(GroupBuilder):
     def __init__(self, white_keys: int, conf: ConfigSchema) -> None:
+        assert white_keys <= 7
+
         wk_total_width = conf.white_key_dims.width_to_mm(conf)
         octave_width = wk_total_width * white_keys
         distances = get_black_key_dist(wk_total_width, conf.mount_u)
@@ -112,16 +114,15 @@ class OctaveBlackPartBuilder(GroupBuilder):
         )
         self.internal_slope = SquareXPunchedSlopeBuilder(
             octave_width - self.female_connector.dx,
-            conf.dist_u,
+            conf.dist_u - conf.mount_plate_width,
             bw_diff,
             distances,
             (conf.mount_u, conf.dist_u),
         )
-
-        self.middle_wall.move_rel(self.key_row, RelativeCoords(zpos=ZPos.BOTTOM))
         self.back_wall.move_rel(
             self.key_row, RelativeCoords(ypos=YPos.BACK), RelativeCoords(zpos=ZPos.TOP)
         )
+        self.middle_wall.move_rel(self.key_row, RelativeCoords(zpos=ZPos.BOTTOM))
         self.outer_arc.move_rel(
             self.middle_wall,
             RelativeCoords(ypos=YPos.FRONT),
@@ -136,7 +137,7 @@ class OctaveBlackPartBuilder(GroupBuilder):
         self.internal_slope.move_rel(
             self.female_connector,
             RelativeCoords(XPos.RIGHT),
-            RelativeCoords(zpos=ZPos.TOP),
+            RelativeCoords(zpos=ZPos.TOP, ypos=YPos.BACK),
         )
         super().__init__(0, 0, 0, 0, 0, 0)
         self.update_size_and_loc()
@@ -152,31 +153,19 @@ class OctaveBlackPartBuilder(GroupBuilder):
 class OctaveBuilder(GroupBuilder):
     def __init__(self, white_keys: int, conf: ConfigSchema) -> None:
         self.black_part = OctaveBlackPartBuilder(white_keys, conf)
+        self.white_part = OctaveWhitePartBuilder(white_keys, conf)
 
+        self.white_part.move_rel(
+            self.black_part.middle_wall,
+            RelativeCoords(zpos=ZPos.BOTTOM),
+            RelativeCoords(ypos=YPos.BACK),
+        )
 
-#     black_mount_plate = (
-#         # slope between black and white part of the keyboard connector
-#         + slope(
-#             wp_male_connector_width, conf.dist_u, bw_diff + wp_male_connector_height
-#         ).translate(
-#             [
-#                 octave_width - wp_male_connector_width,
-#                 0,
-#                 -(bw_diff + wp_male_connector_height),
-#             ]
-#         )
-#     )
-#     conn_width, _ = normalize_width_len_connector(b_distances[0], conf.dist_u)
+    def build(self) -> Any:
+        return self.black_part.build() + self.white_part.build()
 
-#     key_hole = square([conf.mount_u, bw_diff]).linear_extrude(bw_diff)
 
 # def generate_octave(white_keys: int, conf: ConfigSchema):
-#     assert white_keys <= 7
-
-#     wk_total_width = conf.white_key_dims.width_to_mm(conf)
-#     octave_width = wk_total_width * white_keys
-
-#     bw_diff = conf.white_black_keys_offset_mm + conf.mount_plate_width
 
 #     assert bw_diff <= (conf.white_key_dims.key_offset_y(conf) - 1), (
 #         "Distance between white and black keys is too high, cannot generate arc between them"
