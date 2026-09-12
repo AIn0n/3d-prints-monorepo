@@ -84,21 +84,21 @@ class ModelBuilder(ABC):
             self.x = other.x
             if alignment.xpos == XPos.CENTER:
                 self.x += (other.dx - self.dx) / 2
-            else:
+            elif alignment.xpos == XPos.RIGHT:
                 self.x += other.dx - self.dx
 
         if alignment.ypos is not None:
             self.y = other.y
             if alignment.ypos == YPos.CENTER:
                 self.y += (other.dy - self.dy) / 2
-            else:
+            elif alignment.ypos == YPos.FRONT:
                 self.y += other.dy - self.dy
 
         if alignment.zpos is not None:
             self.z = other.z
-            if alignment.zpos == YPos.CENTER:
+            if alignment.zpos == ZPos.CENTER:
                 self.z += (other.dz - self.dz) / 2
-            else:
+            elif alignment.zpos == ZPos.TOP:
                 self.z += other.dz - self.dz
 
     @abstractmethod
@@ -129,10 +129,13 @@ class GroupBuilder(ModelBuilder):
         anchor: RelativeCoords,
         alignment: RelativeCoords | None = None,
     ) -> None:
-        for part in self.movable_parts:
-            part.move_rel(other, anchor, alignment)
+        old_x, old_y, old_z = self.x, self.y, self.z
+        super().move_rel(other, anchor, alignment)
+        offset_x = self.x - old_x
+        offset_y = self.y - old_y
+        offset_z = self.z - old_z
 
-        return super().move_rel(other, anchor, alignment)
+        self.move([offset_x, offset_y, offset_z])
 
     def move(self, pos: Sequence[float]) -> None:
         for part in self.movable_parts:

@@ -39,7 +39,7 @@ class OctaveWhitePartBuilder(GroupBuilder):
         )
         self.front_wall_slope = SlopeBuilder(
             octave_width - distances[0],
-            wk_len_offset - conf.mount_plate_width - conf.min_key_margin_mm,
+            wk_len_offset - conf.min_key_margin_mm,
             conf.base_height_mm,
         )
         self.left_stand = StandBuilder(conf)
@@ -59,9 +59,9 @@ class OctaveWhitePartBuilder(GroupBuilder):
             self.key_row, RelativeCoords(ypos=YPos.FRONT), RelativeCoords(zpos=ZPos.TOP)
         )
         self.front_wall_slope.move_rel(
-            self.front_wall,
-            RelativeCoords(ypos=YPos.BACK),
-            RelativeCoords(xpos=XPos.RIGHT, zpos=ZPos.BOTTOM),
+            self.key_row,
+            RelativeCoords(zpos=ZPos.BOTTOM),
+            RelativeCoords(xpos=XPos.RIGHT, ypos=YPos.BACK),
         )
         self.left_stand.move_rel(self.key_row, RelativeCoords(zpos=ZPos.BOTTOM))
         self.right_stand.move_rel(self.key_row, RelativeCoords(zpos=ZPos.BOTTOM))
@@ -72,6 +72,7 @@ class OctaveWhitePartBuilder(GroupBuilder):
         )
 
         super().__init__(0, 0, 0, octave_width, white_plate_len, 0)
+        self.update_size_and_loc()
 
     def build(self):
         model = (
@@ -157,8 +158,8 @@ class OctaveBuilder(GroupBuilder):
 
         self.white_part.move_rel(
             self.black_part.middle_wall,
-            RelativeCoords(zpos=ZPos.BOTTOM),
-            RelativeCoords(ypos=YPos.BACK),
+            RelativeCoords(zpos=ZPos.TOP),
+            RelativeCoords(ypos=YPos.FRONT),
         )
 
     def build(self) -> Any:
