@@ -105,7 +105,9 @@ class OctaveBlackPartBuilder(GroupBuilder):
         self.middle_wall = CubeBuilder(octave_width, conf.mount_plate_width, bw_diff)
         self.outer_arc = ArcBuilder(octave_width, bw_diff)
         self.back_wall = CubeBuilder(
-            octave_width, conf.mount_plate_width, bw_diff + conf.base_height_mm
+            octave_width,
+            conf.mount_plate_width,
+            bw_diff + conf.base_height_mm + conf.mount_plate_width,
         )
         self.male_connector = ConnectorBuilder(distances[0], conf.dist_u, conf)
         self.female_connector = ConnectorBuilder(
@@ -164,6 +166,7 @@ class OctaveBuilder(GroupBuilder):
             RelativeCoords(zpos=ZPos.BOTTOM),
             RelativeCoords(xpos=XPos.RIGHT),
         )
+        super().__init__()
 
     def build(self) -> Any:
         return self.build_all()

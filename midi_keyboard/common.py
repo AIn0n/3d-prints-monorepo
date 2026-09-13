@@ -1,6 +1,7 @@
+from enum import Flag, auto
 from itertools import accumulate
 from math import atan2, degrees, floor, sqrt
-from typing import Any
+from typing import Any, Callable, Sequence
 
 from base_builders import GroupBuilder, ModelBuilder
 from configuration import ConfigSchema
@@ -9,6 +10,17 @@ from solid2 import cube, cylinder, square
 
 def floor_to_half(x):
     return floor(x * 2) / 2
+
+
+OptionalCopyField = float | Callable[[float], float] | None
+
+
+def resolve_optional_copy_field(arg: float, field: OptionalCopyField) -> float:
+    if field is None:
+        return arg
+    if isinstance(field, float):
+        return field
+    return field(arg)
 
 
 class StandBuilder(ModelBuilder):
@@ -36,7 +48,7 @@ class SlopeBuilder(ModelBuilder):
         angle = degrees(rad_angle)
 
         return sqr.linear_extrude(self.dz) - sqr.linear_extrude(
-            sqrt(self.dx**2 + self.dy**2)
+            sqrt(self.dx**2 + self.dy**2) * 1.5
         ).rotateX(-angle)
 
     def build(self):
@@ -68,6 +80,29 @@ class CubeBuilder(ModelBuilder):
     def __init__(self, dx, dy, dz) -> None:
         super().__init__(0, 0, 0, dx, dy, dz)
 
+    def copy_and_modify(
+        self,
+        new_x: OptionalCopyField = None,
+        new_y: OptionalCopyField = None,
+        new_z: OptionalCopyField = None,
+        new_dx: OptionalCopyField = None,
+        new_dy: OptionalCopyField = None,
+        new_dz: OptionalCopyField = None,
+    ) -> CubeBuilder:
+        copy = CubeBuilder(
+            resolve_optional_copy_field(self.dx, new_dx),
+            resolve_optional_copy_field(self.dy, new_dy),
+            resolve_optional_copy_field(self.dz, new_dz),
+        )
+        copy.move(
+            [
+                resolve_optional_copy_field(self.x, new_x),
+                resolve_optional_copy_field(self.y, new_y),
+                resolve_optional_copy_field(self.z, new_z),
+            ]
+        )
+        return copy
+
     def build(self):
         return cube([self.dx, self.dy, self.dz]).translate([self.x, self.y, self.z])
 
@@ -85,6 +120,11 @@ class KeyRowBuilder(ModelBuilder):
         self.x_key_offsets = x_key_offsets
         self.y_offset = y_offset
         super().__init__(0, 0, 0, width, len_, self.conf.mount_plate_width)
+
+    def to_cube(self) -> CubeBuilder:
+        cube = CubeBuilder(self.dx, self.dy, self.dz)
+        cube.move([self.x, self.y, self.z])
+        return cube
 
     def generate_key_row(self):
         mx_hole = square([self.conf.mount_u, self.conf.mount_u]).translateY(
@@ -104,6 +144,27 @@ class KeyRowBuilder(ModelBuilder):
 class ArcBuilder(ModelBuilder):
     def __init__(self, width: float, len_height: float) -> None:
         super().__init__(0, 0, 0, width, len_height, len_height)
+
+    def copy_and_modify(
+        self,
+        new_dx: OptionalCopyField = None,
+        new_dyz: OptionalCopyField = None,
+        new_x: OptionalCopyField = None,
+        new_y: OptionalCopyField = None,
+        new_z: OptionalCopyField = None,
+    ):
+        copy = ArcBuilder(
+            resolve_optional_copy_field(self.dx, new_dx),
+            resolve_optional_copy_field(self.dy, new_dyz),
+        )
+        copy.move(
+            [
+                resolve_optional_copy_field(self.x, new_x),
+                resolve_optional_copy_field(self.y, new_y),
+                resolve_optional_copy_field(self.z, new_z),
+            ]
+        )
+        return copy
 
     def _arc(self):
         return (
