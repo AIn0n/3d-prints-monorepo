@@ -70,9 +70,7 @@ class OctaveWhitePartBuilder(GroupBuilder):
         self.right_stand.move(
             [wk_total_width * (white_keys - 1), white_plate_len - self.right_stand.r, 0]
         )
-
-        super().__init__(0, 0, 0, octave_width, white_plate_len, 0)
-        self.update_size_and_loc()
+        super().__init__()
 
     def build(self):
         model = (
@@ -140,15 +138,10 @@ class OctaveBlackPartBuilder(GroupBuilder):
             RelativeCoords(XPos.RIGHT),
             RelativeCoords(zpos=ZPos.TOP, ypos=YPos.BACK),
         )
-        super().__init__(0, 0, 0, 0, 0, 0)
-        self.update_size_and_loc()
+        super().__init__()
 
     def build(self) -> Any:
-        first, *rest = self.movable_parts
-        model = first.build()
-        for part in rest:
-            model += part.build()
-        return model
+        return self.build_all()
 
 
 class OctaveBuilder(GroupBuilder):
@@ -173,8 +166,4 @@ class OctaveBuilder(GroupBuilder):
         )
 
     def build(self) -> Any:
-        first, *rest = self.movable_parts
-        model = first.build()
-        for part in rest:
-            model += part.build()
-        return model
+        return self.build_all()

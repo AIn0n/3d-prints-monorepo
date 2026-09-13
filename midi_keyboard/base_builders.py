@@ -106,6 +106,17 @@ class GroupBuilder(ModelBuilder):
     def movable_parts(self) -> Collection[ModelBuilder]:
         return [attr for attr in vars(self).values() if isinstance(attr, ModelBuilder)]
 
+    def __init__(self):
+        super().__init__(0, 0, 0, 0, 0, 0)
+        self.update_size_and_loc()
+
+    def build_all(self) -> Any:
+        first, *rest = self.movable_parts
+        model = first.build()
+        for part in rest:
+            model += part.build()
+        return model
+
     def update_size_and_loc(self) -> None:
         self.x = min_x = min(el.x for el in self.movable_parts)
         self.y = min_y = min(el.y for el in self.movable_parts)
