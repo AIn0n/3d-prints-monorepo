@@ -31,11 +31,11 @@ class StandBuilder(ModelBuilder):
         self.hole_r = conf.stand_screw_r_mm
         super().__init__(0, 0, 0, conf.stand_r_mm, conf.stand_r_mm, conf.base_height_mm)
 
-    def _slope(self):
+    def _stand(self):
         return cylinder(h=self.h, r=self.r) - cylinder(h=self.h, r=self.hole_r)
 
     def build(self):
-        return self._slope().translate([self.x, self.y, self.z])
+        return self._stand().translate([self.x, self.y, self.z])
 
 
 class SlopeBuilder(ModelBuilder):

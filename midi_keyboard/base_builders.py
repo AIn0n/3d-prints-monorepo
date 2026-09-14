@@ -31,6 +31,18 @@ class RelativeCoords:
 
 
 class ModelBuilder(ABC):
+    @property
+    def end_x(self) -> float:
+        return self.x + self.dx
+
+    @property
+    def end_y(self) -> float:
+        return self.y + self.dy
+
+    @property
+    def end_z(self) -> float:
+        return self.z + self.dz
+
     def __init__(self, x: float, y: float, z: float, dx: float, dy: float, dz: float):
         self.x: float = x
         self.y: float = y
@@ -122,9 +134,9 @@ class GroupBuilder(ModelBuilder):
         self.y = min_y = min(el.y for el in self.movable_parts)
         self.z = min_z = min(el.z for el in self.movable_parts)
 
-        max_x = max(el.x + el.dx for el in self.movable_parts)
-        max_y = max(el.y + el.dy for el in self.movable_parts)
-        max_z = max(el.z + el.dz for el in self.movable_parts)
+        max_x = max(el.end_x for el in self.movable_parts)
+        max_y = max(el.end_y for el in self.movable_parts)
+        max_z = max(el.end_z for el in self.movable_parts)
 
         self.dx = max_x - min_x
         self.dy = max_y - min_y
@@ -143,6 +155,7 @@ class GroupBuilder(ModelBuilder):
         offset_z = self.z - old_z
 
         self.move([offset_x, offset_y, offset_z])
+        self.update_size_and_loc()
 
     def move(self, pos: Sequence[float]) -> None:
         for part in self.movable_parts:
