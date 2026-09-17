@@ -1,5 +1,5 @@
 from base_builders import GroupBuilder, RelativeCoords, XPos, YPos, ZPos
-from common import CubeBuilder
+from common import CubeBuilder, SlopeBuilder
 from configuration import ConfigSchema, KeyDimensions
 from octave import OctaveBuilder
 
@@ -30,6 +30,7 @@ class CrontrollerCaseBuilder(GroupBuilder):
             self.top_wall.z - self.white_part_connector.end_z,
         )
         self.connector_slope = octave.male_connectors_slope.copy_and_modify()
+
         key = KeyDimensions(1, 1)
         self.octave_up_key_hole = CubeBuilder(
             key.width_to_mm(conf), key.length_to_mm(conf), conf.mount_plate_width
@@ -78,6 +79,31 @@ class CrontrollerCaseBuilder(GroupBuilder):
             new_y=lambda x: x - key.key_offset_y(conf) - key.length_to_mm(conf)
         )
 
+        self.black_connector_support = CubeBuilder(
+            self.black_part_connector.dx,
+            self.black_part_connector.y - self.front_wall.end_y,
+            self.black_part_connector.dz,
+        )
+        self.black_connector_support.move_rel(
+            self.black_part_connector,
+            RelativeCoords(ypos=YPos.FRONT),
+            RelativeCoords(xpos=XPos.CENTER, zpos=ZPos.BOTTOM),
+        )
+
+        self.key_slope = SlopeBuilder(
+            self.front_wall.end_x - self.octave_up_key_hole.x,
+            self.octave_down_key_hole.y
+            - conf.min_key_margin_mm
+            - self.front_wall.end_y,
+            self.front_wall.dz,
+        )
+
+        self.key_slope.move_rel(
+            self.front_wall,
+            RelativeCoords(ypos=YPos.BACK),
+            RelativeCoords(xpos=XPos.RIGHT, zpos=ZPos.BOTTOM),
+        )
+
         super().__init__()
 
     def build(self):
@@ -91,6 +117,8 @@ class CrontrollerCaseBuilder(GroupBuilder):
             + self.connector_slope.build()
             + self.white_connector_cover.build()
             + self.left_wall.build()
+            + self.black_connector_support.build()
+            + self.key_slope.build()
             - self.octave_up_key_hole.build()
             - self.octave_down_key_hole.build()
         )
