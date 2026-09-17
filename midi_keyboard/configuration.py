@@ -68,6 +68,9 @@ class ConfigSchema:
     stand_screw_r_mm: float = 0.5
     min_key_margin_mm: float = 0.5
 
+    controller_width_mm: float = 50.0
+    controller_len_mm: float = 30.0
+
 
 def load_config(path: Path = Path("default.conf.yaml")) -> ConfigSchema:
     yaml_config = OmegaConf.load(path)

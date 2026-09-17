@@ -1,19 +1,23 @@
 from base_builders import GroupBuilder, RelativeCoords, XPos, YPos, ZPos
 from common import CubeBuilder
-from configuration import ConfigSchema
+from configuration import ConfigSchema, KeyDimensions
 from octave import OctaveBuilder
 
 
 class CrontrollerCaseBuilder(GroupBuilder):
+    def compute_total_dx(self, conf: ConfigSchema) -> float:
+        """
+        total width of the module is sum of: width of one key, width of the controller
+        and width of the bigger connector
+        """
+        return conf.controller_width_mm + conf.dist_u + self.black_part_connector.dx
+
     def __init__(self, octave: OctaveBuilder, conf: ConfigSchema):
         self.black_part_connector = octave.black_part.male_connector
         self.white_part_connector = octave.white_part.male_connector
-        self.top_wall = CubeBuilder(
-            conf.controller_case_widht_mm, octave.dy, conf.mount_plate_width
-        )
-        self.back_wall = octave.black_part.back_wall.copy_and_modify(
-            new_dx=conf.controller_case_widht_mm
-        )
+        total_dx = self.compute_total_dx(conf)
+        self.top_wall = CubeBuilder(total_dx, octave.dy, conf.mount_plate_width)
+        self.back_wall = octave.black_part.back_wall.copy_and_modify(new_dx=total_dx)
         self.front_wall = self.back_wall.copy_and_modify()
         self.left_wall = CubeBuilder(
             conf.mount_plate_width,
@@ -24,6 +28,11 @@ class CrontrollerCaseBuilder(GroupBuilder):
             self.white_part_connector.dx,
             self.white_part_connector.dy,
             self.top_wall.z - self.white_part_connector.end_z,
+        )
+        self.connector_slope = octave.male_connectors_slope.copy_and_modify()
+        key = KeyDimensions(1, 1)
+        self.octave_up_key_hole = CubeBuilder(
+            key.width_to_mm(conf), key.length_to_mm(conf), conf.mount_plate_width
         )
 
         self.back_wall.move_rel(
@@ -51,8 +60,37 @@ class CrontrollerCaseBuilder(GroupBuilder):
             RelativeCoords(ypos=YPos.FRONT),
             RelativeCoords(xpos=XPos.RIGHT, zpos=ZPos.TOP),
         )
+        self.connector_slope.move_rel(
+            self.white_part_connector,
+            RelativeCoords(ypos=YPos.BACK),
+            RelativeCoords(xpos=XPos.CENTER, zpos=ZPos.BOTTOM),
+        )
+
+        self.octave_up_key_hole.move_rel(
+            self.black_part_connector,
+            RelativeCoords(xpos=XPos.LEFT, zpos=ZPos.TOP),
+            RelativeCoords(ypos=YPos.BACK),
+        )
+        self.octave_up_key_hole.move(
+            [-key.key_offset_x(conf), -key.key_offset_y(conf), 0]
+        )
+        self.octave_down_key_hole = self.octave_up_key_hole.copy_and_modify(
+            new_y=lambda x: x - key.key_offset_y(conf) - key.length_to_mm(conf)
+        )
 
         super().__init__()
 
     def build(self):
-        return self.build_all()
+        return (
+            self.black_part_connector.build()
+            + self.white_part_connector.build()
+            + self.top_wall.build()
+            + self.back_wall.build()
+            + self.front_wall.build()
+            + self.white_part_connector.build()
+            + self.connector_slope.build()
+            + self.white_connector_cover.build()
+            + self.left_wall.build()
+            - self.octave_up_key_hole.build()
+            - self.octave_down_key_hole.build()
+        )

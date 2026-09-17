@@ -21,3 +21,6 @@ connector_dims:
 
 midi_keys_count: 31
 helpers_keys_count: 4
+
+controller_width_mm: 50
+controller_len_mm: 30
