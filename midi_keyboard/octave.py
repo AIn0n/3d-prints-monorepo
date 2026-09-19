@@ -42,8 +42,8 @@ class OctaveWhitePartBuilder(GroupBuilder):
             wk_len_offset - conf.min_key_margin_mm,
             conf.base_height_mm,
         )
-        self.left_stand = StandBuilder(conf)
-        self.right_stand = StandBuilder(conf)
+        self.left_stand = StandBuilder(conf.base_height_mm, conf)
+        self.right_stand = StandBuilder(conf.base_height_mm, conf)
 
         self.male_connector.move_rel(
             self.key_row,

@@ -1,5 +1,5 @@
 from base_builders import GroupBuilder, RelativeCoords, XPos, YPos, ZPos
-from common import CubeBuilder, SlopeBuilder
+from common import CubeBuilder, SlopeBuilder, StandBuilder
 from configuration import ConfigSchema, KeyDimensions
 from octave import OctaveBuilder
 
@@ -30,6 +30,8 @@ class CrontrollerCaseBuilder(GroupBuilder):
             self.top_wall.z - self.white_part_connector.end_z,
         )
         self.connector_slope = octave.male_connectors_slope.copy_and_modify()
+        self.left_stand = StandBuilder(self.front_wall.dz, conf)
+        self.right_stand = StandBuilder(self.front_wall.dz, conf)
 
         key = KeyDimensions(1, 1)
         self.octave_up_key_hole = CubeBuilder(
@@ -115,6 +117,17 @@ class CrontrollerCaseBuilder(GroupBuilder):
             RelativeCoords(ypos=YPos.BACK),
             RelativeCoords(xpos=XPos.LEFT, zpos=ZPos.BOTTOM),
         )
+        self.left_stand.move_rel(
+            self.controller_slope,
+            RelativeCoords(ypos=YPos.BACK),
+            RelativeCoords(xpos=XPos.LEFT, ypos=YPos.BACK, zpos=ZPos.TOP),
+        )
+        self.left_stand.move([self.left_stand.r, 0, 0])
+        self.right_stand.move_rel(
+            self.controller_slope,
+            RelativeCoords(ypos=YPos.BACK),
+            RelativeCoords(xpos=XPos.RIGHT, ypos=YPos.BACK, zpos=ZPos.TOP),
+        )
 
         super().__init__()
 
@@ -132,6 +145,8 @@ class CrontrollerCaseBuilder(GroupBuilder):
             + self.black_connector_support.build()
             + self.key_slope.build()
             + self.controller_slope.build()
+            + self.left_stand.build()
+            + self.right_stand.build()
             - self.octave_up_key_hole.build()
             - self.octave_down_key_hole.build()
         )

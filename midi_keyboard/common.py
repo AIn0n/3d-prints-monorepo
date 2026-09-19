@@ -24,12 +24,11 @@ def resolve_optional_copy_field(arg: float, field: OptionalCopyField) -> float:
 
 
 class StandBuilder(ModelBuilder):
-    def __init__(self, conf: ConfigSchema):
-        diameter = conf.stand_r_mm * 2
+    def __init__(self, height: float, conf: ConfigSchema):
         self.r = conf.stand_r_mm
-        self.h = conf.base_height_mm
+        self.h = height
         self.hole_r = conf.stand_screw_r_mm
-        super().__init__(0, 0, 0, conf.stand_r_mm, conf.stand_r_mm, conf.base_height_mm)
+        super().__init__(0, 0, 0, conf.stand_r_mm, conf.stand_r_mm, height)
 
     def _stand(self):
         return cylinder(h=self.h, r=self.r) - cylinder(h=self.h, r=self.hole_r)
