@@ -79,6 +79,12 @@ class CrontrollerCaseBuilder(GroupBuilder):
             new_y=lambda x: x - key.key_offset_y(conf) - key.length_to_mm(conf)
         )
 
+        assert conf.controller_len_mm < octave.dy
+        self.controller_slope = SlopeBuilder(
+            self.octave_up_key_hole.x - self.front_wall.x,
+            self.back_wall.y - self.front_wall.end_y - conf.controller_len_mm,
+            self.front_wall.dz,
+        )
         self.black_connector_support = CubeBuilder(
             self.black_part_connector.dx,
             self.black_part_connector.y - self.front_wall.end_y,
@@ -104,6 +110,12 @@ class CrontrollerCaseBuilder(GroupBuilder):
             RelativeCoords(xpos=XPos.RIGHT, zpos=ZPos.BOTTOM),
         )
 
+        self.controller_slope.move_rel(
+            self.front_wall,
+            RelativeCoords(ypos=YPos.BACK),
+            RelativeCoords(xpos=XPos.LEFT, zpos=ZPos.BOTTOM),
+        )
+
         super().__init__()
 
     def build(self):
@@ -119,6 +131,7 @@ class CrontrollerCaseBuilder(GroupBuilder):
             + self.left_wall.build()
             + self.black_connector_support.build()
             + self.key_slope.build()
+            + self.controller_slope.build()
             - self.octave_up_key_hole.build()
             - self.octave_down_key_hole.build()
         )
