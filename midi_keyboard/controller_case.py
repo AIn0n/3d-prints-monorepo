@@ -10,7 +10,13 @@ class CrontrollerCaseBuilder(GroupBuilder):
         total width of the module is sum of: width of one key, width of the controller
         and width of the bigger connector
         """
-        return conf.controller_width_mm + conf.dist_u + self.black_part_connector.dx
+        return (
+            conf.controller_width_mm
+            + conf.dist_u
+            + self.black_part_connector.dx
+            + conf.mount_plate_width
+            + KeyDimensions(1, 1).key_offset_x(conf)
+        )
 
     def __init__(self, octave: OctaveBuilder, conf: ConfigSchema):
         self.black_part_connector = octave.black_part.male_connector
@@ -33,7 +39,7 @@ class CrontrollerCaseBuilder(GroupBuilder):
         self.left_stand = StandBuilder(self.front_wall.dz, conf)
         self.right_stand = StandBuilder(self.front_wall.dz, conf)
         self.port_hole = XRoundedCubeBuilder(
-            conf.mount_plate_width,
+            conf.mount_plate_width * 2,
             conf.controller_len_mm,
             conf.controller_height_mm,
         )
@@ -135,10 +141,8 @@ class CrontrollerCaseBuilder(GroupBuilder):
         )
         self.port_hole.move_rel(
             self.back_wall,
-            RelativeCoords(
-                xpos=XPos.LEFT,
-            ),
-            RelativeCoords(ypos=YPos.BACK, zpos=ZPos.TOP),
+            RelativeCoords(xpos=XPos.LEFT, ypos=YPos.FRONT),
+            RelativeCoords(zpos=ZPos.TOP),
         )
 
         super().__init__()
