@@ -70,6 +70,7 @@ class ConfigSchema:
 
     controller_width_mm: float = 50.0
     controller_len_mm: float = 30.0
+    controller_height_mm: float = 5.0
 
 
 def load_config(path: Path = Path("default.conf.yaml")) -> ConfigSchema:

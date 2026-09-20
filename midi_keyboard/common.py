@@ -223,3 +223,22 @@ def generate_backplate(white_keys: int, conf: ConfigSchema):
             ]
         )
     return backplate
+
+
+class XRoundedCubeBuilder(ModelBuilder):
+    def __init__(self, dx: float, dy: float, dz: float):
+        assert dy >= dz
+        self.r = dz / 2
+        super().__init__(0, 0, 0, dx, dy, dz)
+
+    def build(self) -> Any:
+        cyl = cylinder(h=self.dx, d=self.dz)
+        c_len = self.dy - self.dz
+        c = cube([self.dz, c_len, self.dx])
+        return (
+            (cyl.translateX(self.r) + c + cyl.translateX(self.r).translateY(c_len))
+            .rotateY(90)
+            .translateZ(self.dz)
+            .translateY(self.r)
+            .translate([self.x, self.y, self.z])
+        )
