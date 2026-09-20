@@ -242,3 +242,21 @@ class XRoundedCubeBuilder(ModelBuilder):
             .translateY(self.r)
             .translate([self.x, self.y, self.z])
         )
+
+
+class InvertedArcBuilder(ModelBuilder):
+    def __init__(self, width: float, len_height: float) -> None:
+        super().__init__(0, 0, 0, width, len_height, len_height)
+
+    def _arc(self):
+        return (
+            (
+                cube([self.dy, self.dy, self.dx])
+                - cylinder(r=self.dz, h=self.dx).translate([self.dx, self.dy, 0])
+            )
+            .rotateY(90)
+            .translateZ(self.dz)
+        )
+
+    def build(self):
+        return self._arc().translate([self.x, self.y, self.z])
