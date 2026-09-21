@@ -5,17 +5,23 @@ from octave import OctaveBuilder
 
 
 class EndCapBuilder(GroupBuilder):
+    def compute_dx(self, octave: OctaveBuilder, conf: ConfigSchema) -> float:
+        return max(
+            octave.black_part.female_connector.dx,
+            octave.white_part.female_connector.dx + conf.stand_r_mm * 2,
+        )
+
     def __init__(self, octave: OctaveBuilder, conf: ConfigSchema) -> None:
         self.black_part_connector = octave.black_part.female_connector
         self.white_part_connector = octave.white_part.female_connector
-        connector_dx = self.black_part_connector.dx
-        total_dx = connector_dx + conf.mount_plate_width
+        total_dx_excl_wall = self.compute_dx(octave, conf)
+        total_dx = total_dx_excl_wall + conf.mount_plate_width
         self.black_part_wall = octave.black_part.key_row.to_cube().copy_and_modify(
-            new_dx=connector_dx,
+            new_dx=total_dx_excl_wall,
             new_x=0,
         )
         self.white_part_wall = octave.white_part.key_row.to_cube().copy_and_modify(
-            new_dx=connector_dx, new_x=0
+            new_dx=total_dx_excl_wall, new_x=0
         )
         self.mid_wall = octave.black_part.middle_wall.copy_and_modify(
             new_dx=total_dx, new_x=0
@@ -37,9 +43,9 @@ class EndCapBuilder(GroupBuilder):
             self.front_wall.dz,
         )
         self.front_wall_support_slope = SlopeBuilder(
-            connector_dx - self.white_part_connector.dx,
-            self.white_part_connector.dy,
-            self.front_wall.dz,
+            total_dx_excl_wall - self.white_part_connector.dx,
+            self.mid_wall.end_y - self.front_wall.end_y,
+            self.front_wall.dz - conf.mount_plate_width,
         )
 
         self.black_cap.move_rel(
