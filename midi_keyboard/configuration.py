@@ -72,6 +72,8 @@ class ConfigSchema:
     controller_len_mm: float = 30.0
     controller_height_mm: float = 5.0
 
+    front_arc_r_mm: float = 5
+
 
 def load_config(path: Path = Path("default.conf.yaml")) -> ConfigSchema:
     yaml_config = OmegaConf.load(path)

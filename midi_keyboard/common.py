@@ -252,7 +252,7 @@ class InvertedArcBuilder(ModelBuilder):
         return (
             (
                 cube([self.dy, self.dy, self.dx])
-                - cylinder(r=self.dz, h=self.dx).translate([self.dx, self.dy, 0])
+                - cylinder(r=self.dz, h=self.dx).translate([self.dy, self.dy, 0])
             )
             .rotateY(90)
             .translateZ(self.dz)

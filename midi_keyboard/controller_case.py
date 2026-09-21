@@ -1,5 +1,11 @@
 from base_builders import GroupBuilder, RelativeCoords, XPos, YPos, ZPos
-from common import CubeBuilder, SlopeBuilder, StandBuilder, XRoundedCubeBuilder
+from common import (
+    CubeBuilder,
+    SlopeBuilder,
+    StandBuilder,
+    XRoundedCubeBuilder,
+    InvertedArcBuilder,
+)
 from configuration import ConfigSchema, KeyDimensions
 from octave import OctaveBuilder
 
@@ -42,6 +48,9 @@ class CrontrollerCaseBuilder(GroupBuilder):
             conf.mount_plate_width * 2,
             conf.controller_len_mm,
             conf.controller_height_mm,
+        )
+        self.front_arc = InvertedArcBuilder(
+            total_dx + conf.mount_plate_width, conf.front_arc_r_mm
         )
 
         key = KeyDimensions(1, 1)
@@ -144,6 +153,11 @@ class CrontrollerCaseBuilder(GroupBuilder):
             RelativeCoords(xpos=XPos.LEFT, ypos=YPos.FRONT),
             RelativeCoords(zpos=ZPos.TOP),
         )
+        self.front_arc.move_rel(
+            self.left_wall,
+            RelativeCoords(zpos=ZPos.TOP),
+            RelativeCoords(xpos=XPos.LEFT, ypos=YPos.FRONT, zpos=ZPos.TOP),
+        )
 
         super().__init__()
 
@@ -166,4 +180,5 @@ class CrontrollerCaseBuilder(GroupBuilder):
             - self.port_hole.build()
             - self.octave_up_key_hole.build()
             - self.octave_down_key_hole.build()
+            - self.front_arc.build()
         )
