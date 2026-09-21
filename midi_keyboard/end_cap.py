@@ -1,5 +1,5 @@
 from base_builders import GroupBuilder, RelativeCoords, XPos, YPos, ZPos
-from common import CubeBuilder, SlopeBuilder
+from common import CubeBuilder, SlopeBuilder, StandBuilder
 from configuration import ConfigSchema
 from octave import OctaveBuilder
 
@@ -34,6 +34,9 @@ class EndCapBuilder(GroupBuilder):
             new_dx=total_dx,
             new_x=0,
         )
+        stand_height = self.white_part_wall.z - self.front_wall.z
+        self.back_stand = StandBuilder(stand_height, conf)
+        self.front_stand = StandBuilder(stand_height, conf)
         self.black_cap = CubeBuilder(
             conf.mount_plate_width, self.black_part_connector.dy, self.back_wall.dz
         )
@@ -62,6 +65,27 @@ class EndCapBuilder(GroupBuilder):
             self.white_cap,
             RelativeCoords(xpos=XPos.LEFT),
             RelativeCoords(ypos=YPos.FRONT, zpos=ZPos.BOTTOM),
+        )
+        self.front_stand.move_rel(
+            self.white_part_wall,
+            RelativeCoords(zpos=ZPos.BOTTOM),
+            RelativeCoords(xpos=XPos.RIGHT, ypos=YPos.FRONT),
+        )
+        self.front_stand.move([0, self.front_stand.r, 0])
+        self.back_stand.move_rel(
+            self.white_part_wall,
+            RelativeCoords(zpos=ZPos.BOTTOM),
+            RelativeCoords(xpos=XPos.RIGHT, ypos=YPos.BACK),
+        )
+        self.mid_wall_support = CubeBuilder(
+            self.black_cap.x - self.black_part_connector.end_x,
+            self.black_part_connector.dy,
+            self.mid_wall.dz,
+        )
+        self.mid_wall_support.move_rel(
+            self.black_part_connector,
+            RelativeCoords(xpos=XPos.RIGHT),
+            RelativeCoords(ypos=YPos.CENTER, zpos=ZPos.TOP),
         )
         super().__init__()
 
