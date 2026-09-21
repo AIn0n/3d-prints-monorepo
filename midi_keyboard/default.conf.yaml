@@ -25,3 +25,5 @@ helpers_keys_count: 4
 controller_width_mm: 35
 controller_len_mm: 25
 controller_height_mm: 5
+
+front_arc_r_mm: 4.0

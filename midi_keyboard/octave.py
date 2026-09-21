@@ -8,6 +8,7 @@ from common import (
     SlopeBuilder,
     SquareXPunchedSlopeBuilder,
     StandBuilder,
+    InvertedArcBuilder,
 )
 from configuration import ConfigSchema, KeyDimensions
 from connectors import ConnectorBuilder
@@ -42,6 +43,9 @@ class OctaveWhitePartBuilder(GroupBuilder):
             wk_len_offset - conf.min_key_margin_mm,
             conf.base_height_mm,
         )
+        self.front_arc = InvertedArcBuilder(
+            self.key_row.dx - self.female_connector.dx, conf.front_arc_r_mm
+        )
         self.left_stand = StandBuilder(conf.base_height_mm, conf)
         self.right_stand = StandBuilder(conf.base_height_mm, conf)
 
@@ -70,6 +74,12 @@ class OctaveWhitePartBuilder(GroupBuilder):
         self.right_stand.move(
             [wk_total_width * (white_keys - 1), white_plate_len - self.right_stand.r, 0]
         )
+        self.front_arc.move_rel(self.female_connector, RelativeCoords(xpos=XPos.RIGHT))
+        self.front_arc.move_rel(
+            self.front_wall,
+            RelativeCoords(zpos=ZPos.BOTTOM),
+            RelativeCoords(ypos=YPos.FRONT, zpos=ZPos.TOP),
+        )
         super().__init__()
 
     def build(self):
@@ -79,6 +89,7 @@ class OctaveWhitePartBuilder(GroupBuilder):
             + self.female_connector.build()
             + self.front_wall.build()
             + self.front_wall_slope.build()
+            - self.front_arc.build()
         )
         if self.white_keys > 1:
             model += self.left_stand.build() + self.right_stand.build()
