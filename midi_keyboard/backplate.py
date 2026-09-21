@@ -4,6 +4,16 @@ from common import CubeBuilder, StandBuilder
 from solid2 import cylinder
 
 
+def flatten_groups(group: GroupBuilder) -> list[ModelBuilder]:
+    res = []
+    for el in group.movable_parts:
+        if isinstance(el, GroupBuilder):
+            res.extend(flatten_groups(el))
+        else:
+            res.append(el)
+    return res
+
+
 class BackplateBuilder(GroupBuilder):
     def __init__(self, model: GroupBuilder, conf: ConfigSchema) -> None:
         self.c = CubeBuilder(model.dx, model.dy, conf.backplate_dims.width_mm)
@@ -13,7 +23,7 @@ class BackplateBuilder(GroupBuilder):
             RelativeCoords(ypos=YPos.FRONT, xpos=XPos.LEFT),
         )
         self.stands_cords = [
-            (el.x, el.y) for el in model.movable_parts if isinstance(el, StandBuilder)
+            (el.x, el.y) for el in flatten_groups(model) if isinstance(el, StandBuilder)
         ]
         self.hole_r = conf.backplate_dims.screw_r_mm
         super().__init__()
