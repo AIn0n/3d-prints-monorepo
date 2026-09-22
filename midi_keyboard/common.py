@@ -1,9 +1,8 @@
-from enum import Flag, auto
 from itertools import accumulate
 from math import atan2, degrees, floor, sqrt
-from typing import Any, Callable, Sequence
+from typing import Any, Callable
 
-from base_builders import GroupBuilder, ModelBuilder
+from base_builders import ModelBuilder
 from configuration import ConfigSchema
 from solid2 import cube, cylinder, square
 
