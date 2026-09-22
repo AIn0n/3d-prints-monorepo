@@ -1,10 +1,10 @@
 from base_builders import GroupBuilder, RelativeCoords, XPos, YPos, ZPos
 from common import (
     CubeBuilder,
+    InvertedArcBuilder,
     SlopeBuilder,
     StandBuilder,
     XRoundedCubeBuilder,
-    InvertedArcBuilder,
 )
 from configuration import ConfigSchema, KeyDimensions
 from octave import OctaveBuilder
@@ -52,10 +52,8 @@ class CrontrollerCaseBuilder(GroupBuilder):
         self.front_arc = InvertedArcBuilder(
             total_dx + conf.mount_plate_width, conf.front_arc_r_mm
         )
-
-        key = KeyDimensions(1, 1)
         self.octave_up_key_hole = CubeBuilder(
-            key.width_to_mm(conf), key.length_to_mm(conf), conf.mount_plate_width
+            conf.mount_u, conf.mount_u, conf.mount_plate_width
         )
 
         self.back_wall.move_rel(
@@ -94,11 +92,13 @@ class CrontrollerCaseBuilder(GroupBuilder):
             RelativeCoords(xpos=XPos.LEFT, zpos=ZPos.TOP),
             RelativeCoords(ypos=YPos.BACK),
         )
+        key = KeyDimensions(1, 1)
         self.octave_up_key_hole.move(
             [-key.key_offset_x(conf), -key.key_offset_y(conf), 0]
         )
+        mount_keycap_diff = (conf.dist_u - conf.mount_u) / 2
         self.octave_down_key_hole = self.octave_up_key_hole.copy_and_modify(
-            new_y=lambda x: x - key.key_offset_y(conf) - key.length_to_mm(conf)
+            new_y=lambda x: x - (mount_keycap_diff + conf.mount_u)
         )
 
         assert conf.controller_len_mm < octave.dy
