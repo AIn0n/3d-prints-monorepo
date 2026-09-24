@@ -96,9 +96,8 @@ class CrontrollerCaseBuilder(GroupBuilder):
         self.octave_up_key_hole.move(
             [-key.key_offset_x(conf), -key.key_offset_y(conf), 0]
         )
-        mount_keycap_diff = (conf.dist_u - conf.mount_u) / 2
         self.octave_down_key_hole = self.octave_up_key_hole.copy_and_modify(
-            new_y=lambda x: x - (mount_keycap_diff + conf.mount_u)
+            new_y=lambda x: x - conf.dist_u
         )
 
         assert conf.controller_len_mm < octave.dy
