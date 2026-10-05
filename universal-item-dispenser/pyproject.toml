@@ -1,0 +1,26 @@
+[project]
+name = "universal-item-dispenser"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Szymon Górka", email = "55995692+AIn0n@users.noreply.github.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "build123d>=0.13.0",
+]
+
+[project.scripts]
+universal-item-dispenser = "universal_item_dispenser:main"
+
+[project.optional-dependencies]
+preview = [
+    "ipykernel>=7.3.0",
+    "jupyter-console>=6.6.3",
+    "ocp-vscode>=4.1.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.19,<0.13.0"]
+build-backend = "uv_build"
