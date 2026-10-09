@@ -24,6 +24,8 @@ def universal_item_dispenser(size: int):
     finger_hole_width = 3
 
     lid_height = 2
+    lid_margin = 0.2
+    lid_internal_len = 0.5
 
     with BuildPart() as dispenser:
         with BuildSketch() as solid_walls:
@@ -38,6 +40,7 @@ def universal_item_dispenser(size: int):
 
         topf = dispenser.faces().sort_by(Axis.Z)[-1]
         start = topf.vertices().group_by(Axis.X)[0][0]
+        internal_offset_x = start.X + circle_r
         with BuildSketch(topf) as hole:
             with Locations((start.X + circle_r, 0, start.Z)):
                 Rectangle(obj_x, obj_y, align=(Align.MIN, Align.CENTER))
@@ -61,14 +64,17 @@ def universal_item_dispenser(size: int):
         extrude(slot.sketch, amount=-5, mode=Mode.SUBTRACT)
 
         bottom_face = dispenser.faces().sort_by(Axis.Z)[0]
-        with BuildSketch(bottom_face.offset(- total_z - 4)) as lid_base:
-            RectangleRounded(bottom_face.width, bottom_face.length, total_rounding)
-
+        with BuildSketch(bottom_face.offset(5)) as lid_base:
+            RectangleRounded(base_size_x, base_size_y, total_rounding)
+            locs_lid = [lid_base.wire().position_at(i / n) for i in range(n)]
+            with Locations(locs_lid):
+                Circle(circle_r)
         extrude(lid_base.sketch, amount=lid_height)
-        chamfer(dispenser.edges().group_by(Axis.Z)[-1], length=0.5)
 
-        
-
+        with BuildSketch(bottom_face.offset(5 + lid_height)) as lid_internal:
+            with Locations((internal_offset_x + lid_margin, 0, 0)):
+                Rectangle(obj_x - lid_margin, obj_y - lid_margin, align=(Align.MIN, Align.CENTER))
+        extrude(lid_internal.sketch, amount=lid_internal_len)
     return dispenser.part
 
 
