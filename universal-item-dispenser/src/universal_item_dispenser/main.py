@@ -23,7 +23,9 @@ def universal_item_dispenser(size: int):
     finger_hole_height = 5
     finger_hole_width = 3
 
-    with BuildPart() as bp:
+    lid_height = 2
+
+    with BuildPart() as dispenser:
         with BuildSketch() as solid_walls:
             RectangleRounded(base_size_x, base_size_y, total_rounding)
         extrude(solid_walls.sketch, amount=total_z)
@@ -34,7 +36,7 @@ def universal_item_dispenser(size: int):
                 Circle(circle_r)
         extrude(circles.sketch, amount=total_z)
 
-        topf = bp.faces().sort_by(Axis.Z)[-1]
+        topf = dispenser.faces().sort_by(Axis.Z)[-1]
         start = topf.vertices().group_by(Axis.X)[0][0]
         with BuildSketch(topf) as hole:
             with Locations((start.X + circle_r, 0, start.Z)):
@@ -42,10 +44,8 @@ def universal_item_dispenser(size: int):
 
         extrude(hole.sketch, amount=-total_z + base_z, mode=Mode.SUBTRACT)
 
-        front_inner_wall = bp.faces().filter_by(GeomType.PLANE).sort_by(Axis.X)[0]
+        front_inner_wall = dispenser.faces().filter_by(GeomType.PLANE).sort_by(Axis.X)[0]
         plane_inner_wall = Plane(front_inner_wall, z_dir=(-1, 0, 0))
-        front_inner_wall.edges().sort_by(Axis.Z)[0].center()
-        front_inner_wall.vertices().sort_by(Axis.Z)[0]
         plane_inner_wall = plane_inner_wall.shift_origin(
             front_inner_wall.edges().sort_by(Axis.Z)[0].center()
         )
@@ -60,7 +60,17 @@ def universal_item_dispenser(size: int):
 
         extrude(slot.sketch, amount=-5, mode=Mode.SUBTRACT)
 
-    return bp.part
+        bottom_face = dispenser.faces().sort_by(Axis.Z)[0]
+        with BuildSketch(bottom_face.offset(- total_z - 4)) as lid_base:
+            RectangleRounded(bottom_face.width, bottom_face.length, total_rounding)
+
+        extrude(lid_base.sketch, amount=lid_height)
+        chamfer(dispenser.edges().group_by(Axis.Z)[-1], length=0.5)
+
+        
+
+    return dispenser.part
+
 
 
 show(universal_item_dispenser(4))
